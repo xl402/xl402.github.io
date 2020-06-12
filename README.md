@@ -7,4 +7,3 @@ dactl is a fast, modern and configurable [Jekyll](http://jekyllrb.com/) theme wi
 
 ![light theme](uploads/screenshot_desktop_light.jpg)
 ![dark theme](uploads/screenshot_desktop_dark.jpg)
-# xl402.github.io
