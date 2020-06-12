@@ -1,0 +1,4 @@
+---
+slug: bayesian
+name: bayesian
+---

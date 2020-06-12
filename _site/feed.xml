@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lu Blog</title>
+    <description>© 2020 Tom Lu. Powered by Jekyll &amp; Dactl
+</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 13 Jun 2020 00:09:37 +0100</pubDate>
+    <lastBuildDate>Sat, 13 Jun 2020 00:09:37 +0100</lastBuildDate>
+    <generator>Jekyll v3.8.7</generator>
+    
+      <item>
+        <title>Expectation Maximisation Deep Dive</title>
+        <description>&lt;p class=&quot;lead&quot;&gt;This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.&lt;/p&gt;
+&lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
+&lt;p&gt;Expectation maximisation (EM) is one of those things that I was taught several times at University, each time it was explained slightly differently, and I was confused by it every single time. The confusion is mostly because we never implemented any of the EM algorithms through Python, and EMs were always introduced to solve a &lt;strong&gt;specific&lt;/strong&gt; problem.&lt;/p&gt;
+
+&lt;p&gt;Without a doubt, EM serves as a foundation for understanding variational inference. Here, I will try to go in-depth and derive and &lt;em&gt;E&lt;/em&gt; and &lt;em&gt;M&lt;/em&gt; steps under a &lt;strong&gt;general&lt;/strong&gt; framework. Later I will derive and implement a &lt;em&gt;Gaussian Mixture Model&lt;/em&gt; using EM.&lt;/p&gt;
+
+&lt;p&gt;This post is based on Coursera’s &lt;a href=&quot;https://www.coursera.org/learn/bayesian-methods-in-machine-learning&quot;&gt;&lt;em&gt;Bayesian Methods for Machine Learning&lt;/em&gt;&lt;/a&gt; specialisation course. Intermediate-level probability theory and ML knowledge are assumed. Knowledge of the &lt;a href=&quot;https://www.youtube.com/watch?v=ErfnhcEV1O8&quot;&gt;&lt;em&gt;Kullback–Leibler&lt;/em&gt;&lt;/a&gt; (KL) divergence and &lt;a href=&quot;https://www.youtube.com/watch?v=HfCb1K4Nr8M&quot;&gt;&lt;em&gt;Jensen’s inequality&lt;/em&gt;&lt;/a&gt;  are also expected (link to videos explaining the concepts).&lt;/p&gt;
+
+&lt;h1 id=&quot;2-theory-of-em&quot;&gt;2. Theory of EM&lt;/h1&gt;
+&lt;h2 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h2&gt;
+&lt;p&gt;EM aims to tackle a family of models termed &lt;strong&gt;latent variable models&lt;/strong&gt; (examples like GMM, LDA, etc). Their graphical representation can be compactly represented as:&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;250&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; is our data-points in the dataset &lt;code class=&quot;highlighter-rouge&quot;&gt;$X = \{x_0, \cdots x_N\}$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; is the latent variables associated with each datapoint. The edge represents that &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; is conditioned by &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt;. Albeit this graphical model looks simple, to fully specify the model, we need to:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Specify prior distribution of &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Specify the conditional distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(x_i|z_i)$&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;both these two distributions can be arbitrarily complex (which is a problem during both model fitting and inference). If we &lt;strong&gt;summarise&lt;/strong&gt; all the model parameters associated with our problem to be &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, our goal becomes finding a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which &lt;strong&gt;maximises the likelihood&lt;/strong&gt; of our dataset &lt;code class=&quot;highlighter-rouge&quot;&gt;$X$&lt;/code&gt; given our model:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\max_{\theta}p(X|\theta)
+$$&lt;/code&gt;
+We assume our datapoints are &lt;em&gt;i.i.d&lt;/em&gt; under our model, therefore:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\max_{\theta}p(X|\theta) = \max_\theta \prod p(x_i|\theta)
+$$&lt;/code&gt;
+simplifying the product terms with a sum by maximising the log-likelihood:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\max_{\theta}\log p(X|\theta) = \max_\theta \sum_i \log p(x_i|\theta)
+$$&lt;/code&gt;
+now we explicitly add in the conditional distribution using the rule of marginalisation:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\max_{\theta}\sum_i \log\left(\sum_c p(x_i, z_i=c|\theta)\right)
+$$&lt;/code&gt;
+where for simplicity, we assume &lt;strong&gt;discrete distribution&lt;/strong&gt; for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; (derivation holds if you replace the sum with an integral). The support for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; is &lt;code class=&quot;highlighter-rouge&quot;&gt;$[0, 1, \cdots, c]$&lt;/code&gt;, i.e. it is categorical.&lt;/p&gt;
+
+&lt;p&gt;That’s it! EM tries to find &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; that maximises the likelihood of our data, and through some maths we have shown:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\max _{\theta} p(X | \theta) = \max _{\theta} \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)
+$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;22-graphical-representation-of-the-solution&quot;&gt;2.2 Graphical representation of the solution&lt;/h3&gt;
+
+&lt;p&gt;Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.&lt;/p&gt;
+
+&lt;p&gt;We wish to find a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which maximises the likelihood &lt;code class=&quot;highlighter-rouge&quot;&gt;$\log(p(X|\theta))$&lt;/code&gt;. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a &lt;em&gt;lower bound&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{L}(q, \theta)$&lt;/code&gt;, which is &lt;strong&gt;below the likelihood&lt;/strong&gt; at all &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; values. At timestep &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt;, the EM update rule are as follows:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: fix &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, find some arbitrary &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; which maximises the lower-bound, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^{k+1} = \arg\max_{q}\mathcal{L}(\theta^k, q)$&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: fix &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, find model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; that maximises our current lower-bound, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^{k+1} = \arg\max_\theta \mathcal{L}(\theta, q^{k+1})$&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;One thing to get our head around is that in &lt;strong&gt;E&lt;/strong&gt;-step, we are essentially taking derivative w.r.t. a &lt;strong&gt;function&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;. These two steps can be seen more clearly in the picture below.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/8egXBCs.gif&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;Derivation later will show exactly how we have arrived at &lt;strong&gt;E&lt;/strong&gt; and &lt;strong&gt;M&lt;/strong&gt; steps, but jumping ahead, these two steps are equivalent to:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: set &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; to be equal (or approximately equal) to the posterior distribution, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^k(z_i) = p(z_i|\theta_i^k, x_i)$&lt;/code&gt; where &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt; denotes the timestep in our iteration.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: under our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;, find a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which maximises the data likelihood, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own &lt;strong&gt;variational distribution&lt;/strong&gt; which is a simple function. At each timestep, we approximate or set this function to the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(Z|X,\theta)$&lt;/code&gt; (&lt;strong&gt;E&lt;/strong&gt;-step), and we maximises the likelihood of our data-points under this function instead (&lt;strong&gt;M&lt;/strong&gt;-step). Alternating these two procedures, we are guaranteed to reach a &lt;strong&gt;local optima&lt;/strong&gt; (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).&lt;/p&gt;
+
+&lt;h3 id=&quot;23-detailed-derivation&quot;&gt;2.3 Detailed Derivation&lt;/h3&gt;
+&lt;h4 id=&quot;e-step&quot;&gt;E-Step&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$&lt;/code&gt;, to minimise the gap between our lower-bound and the likelihood under current parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, set our variational distribution to be the posterior.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Proof&lt;/strong&gt;: first, lets define how exactly a lower-bound arises and where on earth this &lt;strong&gt;variational distribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; comes from. Decompose the likelihood:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$&lt;/code&gt;
+Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; (coz why not?):
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X | \theta) = \sum_{i} \log\left( \sum_{c} q\left(z_{i}=c\right) \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)$$&lt;/code&gt;
+which is equivalent to:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X|\theta) = \sum_{i} \log \mathbb{E}_{z_{i} \sim q} \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}$$&lt;/code&gt;
+now we can utilise Jensen’s inequality to obtain a lower bound for this equality. As a reminder, for any concave function (such as &lt;code class=&quot;highlighter-rouge&quot;&gt;$\log(x)$&lt;/code&gt; in our case), &lt;code class=&quot;highlighter-rouge&quot;&gt;$f (\mathbb{E}[x]) \geqslant \mathbb{E}[f (x)]$&lt;/code&gt;. We can therefore write the equation above as:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\log p(X|\theta)\geq \sum_{i} \mathbb{E}_{z_{i}\sim q} \log \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}
+$$&lt;/code&gt;
+expanding the expectation out:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\log p(X|\theta)\geq\sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)} = \mathcal{L}(\theta, q)
+$$&lt;/code&gt;
+Our objective has the become &lt;strong&gt;minimising the gap&lt;/strong&gt; between this lower-bound by optimising our arbitrary distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\arg\min_q \text{Objective} = \arg\min_q \left( \log p(X|\theta) - \mathcal{L}(\theta, q)\right)
+$$&lt;/code&gt;
+more maths:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\text{Objective} = \sum_{i} \log p\left(x_{i} | \theta\right) - \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
+$$&lt;/code&gt;
+for the first term, we multiply it with &lt;code class=&quot;highlighter-rouge&quot;&gt;$1 = \sum_c q(z_i=c)$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+ =\sum_{i} \left(\log p\left(x_{i} | \theta\right)\sum_{c} q\left(z_{i}=c\right)\right) - \sum_{i} \sum_{c} \cdots
+$$&lt;/code&gt;
+now we can move both summations out:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+=\sum_{i}\sum_{c}\left(\log p\left(x_{i} | \theta\right) q\left(z_{i}=c\right) - q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)} \right)
+$$&lt;/code&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+ =\sum_{i} \sum_{c} \left(q\left(z_{i}=c\right) \left(\log p\left(x_{i} | \theta\right) - \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)\right)
+$$&lt;/code&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+=\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\left(\log \left(\frac{p\left(x_{i} | \theta\right) q\left(z_{i}=c\right)}{p\left(x_{i}, z_{i}=c | \theta\right)}\right)\right)\right)
+$$&lt;/code&gt;
+re-write the joint distribution of the denominator inside the log:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+=\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\left(\log \left(\frac{p\left(x_{i} | \theta\right) q\left(z_{i}=c\right)}{p(x_i|\theta)p(z_i=c|\theta, x_i)}\right)\right)\right)
+$$&lt;/code&gt;
+cancelling out the &lt;code class=&quot;highlighter-rouge&quot;&gt;$p\left(x_{i} | \theta\right)$&lt;/code&gt; we obtain:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+=\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\log \left(\frac{ q\left(z_{i}=c\right)}{ p\left(z_{i}=c | \theta, x_{i}\right)}\right)\right)
+$$&lt;/code&gt;
+observe that the summation under &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt; term corresponds to the KL divergence between &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$p$&lt;/code&gt;, we therefore obtain:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\text{Objective} = \text{KL}(q(z_i)|| p(z_i|\theta, x_i))
+$$&lt;/code&gt;
+after all this faff, we see to minimise the gap (objective) between the likelihood and our lower-bound is equivalent to:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\arg \min _{q}(\log p(X | \theta)-\mathcal{L}(\theta, q)) = \arg \min _{q}\mathrm{KL}\left(q\left(z_{i}\right) \| p\left(z_{i} | \theta, x_{i}\right)\right)
+$$&lt;/code&gt;
+so effectively, &lt;strong&gt;E&lt;/strong&gt;-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; w.r.t. model posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p\left(z_{i} | \theta, x_{i}\right)$&lt;/code&gt;. There is &lt;strong&gt;no guarantee&lt;/strong&gt; that the posterior has a closed-form representation. This is where the rich literature of &lt;strong&gt;variational inference&lt;/strong&gt; comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; to be equal to the posterior.&lt;/p&gt;
+
+&lt;h4 id=&quot;m-step&quot;&gt;M-Step&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt; given a fixed variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, maximise the data plus latent variable’s joint likelihood w.r.t. model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$&lt;/code&gt; where latent variables &lt;strong&gt;come from our variational ditribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Recall from &lt;strong&gt;E&lt;/strong&gt;-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, the only difference is &lt;strong&gt;we can easily perform this maximisation&lt;/strong&gt; since we know our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; (normally it is a Gaussian distribution). Writing the whole expectation term out:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\arg\max_\theta \mathcal{L}(\theta, q) = \arg\max_\theta \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
+$$&lt;/code&gt;
+splitting the terms within the log:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \left(\log p\left(x_{i}, z_{i}=c | \theta\right) - \log q\left(z_{i}=c\right)\right)
+$$&lt;/code&gt;
+the last term is independent of &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right)\log p\left(x_{i}, z_{i}=c | \theta\right) + \text{const}.
+$$&lt;/code&gt;
+condensing the sum over &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt; into expectation, dropping the constant:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\arg \max _{\theta}\sum_{i}\mathbb{E}_{z_i}\left[ \log p(x_i,z_i=c|\theta)\right] = \mathbb{E}_{Z\sim q}\left[ \log p(X,Z|\theta)\right]
+$$&lt;/code&gt;
+So the &lt;strong&gt;M&lt;/strong&gt;-step is simply maximising the joint distribution between collection of latent variables &lt;code class=&quot;highlighter-rouge&quot;&gt;$Z$&lt;/code&gt; and data points &lt;code class=&quot;highlighter-rouge&quot;&gt;$X$&lt;/code&gt; &lt;strong&gt;under the variational distribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+\hat{\theta} = \arg \max _{\theta}\mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]
+$$&lt;/code&gt;
+Again, we definitely know what &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X, Z | \theta)$&lt;/code&gt; is, since we needed it to set up our graphical model. However, maximisation w.r.t. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h1 id=&quot;3-em-in-practice-gaussian-mixture-model&quot;&gt;3. EM in Practice: Gaussian Mixture Model&lt;/h1&gt;
+
+&lt;h2 id=&quot;31-derivation&quot;&gt;3.1 Derivation&lt;/h2&gt;
+
+&lt;h2 id=&quot;32-implementation&quot;&gt;3.2 Implementation&lt;/h2&gt;
+</description>
+        <pubDate>Fri, 12 Jun 2020 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/posts/em</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/em</guid>
+        
+        <category>theory</category>
+        
+        <category>bayesian</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>

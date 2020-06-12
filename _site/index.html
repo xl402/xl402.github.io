@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+       <meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<title>Lu Blog </title>
+<!---->
+<meta name="description" content="© 2020 Tom Lu. Powered by Jekyll & Dactl
+">
+<link rel="canonical" href="http://localhost:4000/">
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Blog" />
+<meta name="twitter:description" content="© 2020 Tom Lu. Powered by Jekyll & Dactl
+" />
+<meta name="twitter:image" content="http://localhost:4000" />
+<meta name="author" content="">
+<link rel="author" href="">
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Blog">
+<meta property="og:description" content="© 2020 Tom Lu. Powered by Jekyll & Dactl
+">
+<meta property="og:url" content="http://localhost:4000/">
+<meta property="og:site_name" content="Lu Blog">
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik:400,400italic,700,700italic">
+<style>
+    html {
+      font-family: "Rubik", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    }
+</style>
+<link rel="stylesheet" href="/assets/css/bf.css">
+   <body>
+       <div class="wrapper" id="blep">
+          <header>
+   <div class="menu">
+     <div class="logo">
+        <a href="/">Lu Blog</a>
+        <object type="image/svg+xml" data="" class="logosvg">Your browser does not support svg images</object>
+     </div>
+       <ul>
+           <li><a href="/about">about</a>
+           <li><a href="/archive">archive</a>
+       </ul>
+   </div>
+   <div class="social">
+     <ul>
+       <li>
+            <a href="https://www.linkedin.com/in/tomlu97" target="_blank" class="smaller">
+              <span class="icon-stackoverflow"></span>
+            </a>
+       <li>
+            <a href="https://github.com/xl402" target="_blank" class="smaller">
+              <span class="icon-github"></span>
+            </a>
+       <li>
+            <a href="#" onclick="switchTheme()" title="Switch theme?">
+              <span class="icon-invert_colors" id="theme-switcher"></span>
+            </a>
+     </ul>
+   </div>
+</header>
+<article class="blog">
+<style>
+  .em {
+    margin-bottom: 2em;
+  }
+  .em::before {
+    background-image: url('https://imgur.com/5zMQ7ys.jpg');
+    background-size: cover;
+    -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -2;
+  }
+  .em::after {
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(255,0,100,0.8);
+    /*mix-blend-mode: darken;
+    mix-blend-mode: color-burn;
+    mix-blend-mode: hard-light;*/
+    mix-blend-mode: overlay;
+    z-index: -1;
+  }
+  .em-container,
+  .em-container::before,
+  .em-container::after {
+    height: 25rem;
+  }
+  .em-bleed-container,
+  .em-bleed-container::before,
+  .em-bleed-container::after {
+    height: 35rem;
+  }
+    @media (max-width: 48rem) {
+        .em-container,
+        .em-container::before,
+        .em-container::after{
+            height: 20rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+ <div class="
+    post-title-container
+        em em-container hero-hov
+  ">
+   <div class="heading-container hero-heading hero-heading-blog">
+     <h1>
+          <a href="/posts/em" title="Expectation Maximisation Deep Dive">Expectation Maximisation Deep Dive</a>
+     </h1>
+     <div class="
+        post-meta
+      ">
+        <span>12/06/2020</span>
+        <span>
+              <a href="/tag/theory">#theory</a>
+              <a href="/tag/bayesian">#bayesian</a>
+        </span>
+     </div>
+   </div>
+ </div>
+     <p class="lead">This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.
+       <div class="readmore">
+          <a href="/posts/em" role="button">Read more</a>
+       <div>
+</article>
+<nav class="pagination" role="navigation">
+<hr/>
+ <ul>
+   <li class="pagination-item-prev" >
+      <span>&laquo; Previous</span>
+   <li class="pagination-item-next" >
+      <span>Next &raquo;</span>
+ </ul>
+<hr/>
+</nav>
+           <footer>
+    <span>© 2020 Tom Lu. Powered by Jekyll & Dactl
+</span>
+    <span>written by Tom Lu</span>
+</footer>
+       </div>
+<script type="text/javascript" src="/assets/js/theme.js"></script>
+<script type="text/javascript" src="/assets/js/barefoot.js"></script>
+<script src="//yihui.org/js/math-code.js"></script>
+<script async
+  src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+    
