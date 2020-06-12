@@ -9,13 +9,13 @@
 <meta name="description" content="This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.
 ">
 -->
-<meta name="description" content="© 2020 Tom Lu. Powered by Jekyll & Dactl
+<meta name="description" content="© 2020. Powered by Jekyll & Dactl
 ">
 <meta name="keywords" content="theory, bayesian">
 <link rel="canonical" href="http://localhost:4000/posts/em">
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="Expectation Maximisation Deep Dive" />
-<meta name="twitter:description" content="© 2020 Tom Lu. Powered by Jekyll & Dactl
+<meta name="twitter:description" content="© 2020. Powered by Jekyll & Dactl
 " />
 <meta name="twitter:image" content="http://localhost:4000" />
 <meta name="author" content="">
@@ -23,7 +23,7 @@
 <meta property="og:locale" content="">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Expectation Maximisation Deep Dive">
-<meta property="og:description" content="© 2020 Tom Lu. Powered by Jekyll & Dactl
+<meta property="og:description" content="© 2020. Powered by Jekyll & Dactl
 ">
 <meta property="og:url" content="http://localhost:4000/posts/em">
 <meta property="og:site_name" content="Lu Blog">
@@ -165,10 +165,10 @@ now we explicitly add in the conditional distribution using the rule of marginal
 $$</code>
 where for simplicity, we assume <strong>discrete distribution</strong> for <code class="highlighter-rouge">$z_i$</code> (derivation holds if you replace the sum with an integral). The support for <code class="highlighter-rouge">$z_i$</code> is <code class="highlighter-rouge">$[0, 1, \cdots, c]$</code>, i.e. it is categorical.
 <p>That’s it! EM tries to find <code class="highlighter-rouge">$\theta$</code> that maximises the likelihood of our data, and through some maths we have shown:
-<code class="highlighter-rouge">$$
+<p class="notice"><code class="highlighter-rouge">$$
 \max _{\theta} p(X | \theta) = \max _{\theta} \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)
 $$</code>
-<h3 id="22-graphical-representation-of-the-solution">2.2 Graphical representation of the solution</h3>
+<h2 id="22-graphical-representation-of-the-solution">2.2 Graphical representation of the solution</h2>
 <p>Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.
 <p>We wish to find a set of parameters <code class="highlighter-rouge">$\theta$</code> which maximises the likelihood <code class="highlighter-rouge">$\log(p(X|\theta))$</code>. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a <em>lower bound</em> <code class="highlighter-rouge">$\mathcal{L}(q, \theta)$</code>, which is <strong>below the likelihood</strong> at all <code class="highlighter-rouge">$\theta$</code> values. At timestep <code class="highlighter-rouge">$k$</code>, the EM update rule are as follows:
 <ul>
@@ -179,14 +179,18 @@ $$</code>
 <p>
 <center><img src="https://i.imgur.com/8egXBCs.gif" alt="drawing" width="600" /></center>
 <p>Derivation later will show exactly how we have arrived at <strong>E</strong> and <strong>M</strong> steps, but jumping ahead, these two steps are equivalent to:
-<ul>
- <li><strong>E</strong>-step: set <em>variational distribution</em> <code class="highlighter-rouge">$q(z_i)$</code> to be equal (or approximately equal) to the posterior distribution, i.e. <code class="highlighter-rouge">$q^k(z_i) = p(z_i|\theta_i^k, x_i)$</code> where <code class="highlighter-rouge">$k$</code> denotes the timestep in our iteration.
- <li><strong>M</strong>-step: under our distribution <code class="highlighter-rouge">$q(z_i)$</code>, find a set of parameters <code class="highlighter-rouge">$\theta$</code> which maximises the data likelihood, i.e. <code class="highlighter-rouge">$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$</code>
-</ul>
+<div class="notice">
+ <ul>
+   <li><strong>E</strong>-step: set <em>variational distribution</em> <code class="highlighter-rouge">$q(z_i)$</code> to be equal (or approximately equal) to the posterior distribution, i.e. <code class="highlighter-rouge">$q^k(z_i) = p(z_i|\theta_i^k, x_i)$</code> where <code class="highlighter-rouge">$k$</code> denotes the timestep in our iteration.
+   <li><strong>M</strong>-step: under our distribution <code class="highlighter-rouge">$q(z_i)$</code>, find a set of parameters <code class="highlighter-rouge">$\theta$</code> which maximises the data likelihood, i.e. <code class="highlighter-rouge">$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$</code>
+ </ul>
+</div>
+<p>
 <p>Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own <strong>variational distribution</strong> which is a simple function. At each timestep, we approximate or set this function to the posterior distribution <code class="highlighter-rouge">$p(Z|X,\theta)$</code> (<strong>E</strong>-step), and we maximises the likelihood of our data-points under this function instead (<strong>M</strong>-step). Alternating these two procedures, we are guaranteed to reach a <strong>local optima</strong> (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).
-<h3 id="23-detailed-derivation">2.3 Detailed Derivation</h3>
-<h4 id="e-step">E-Step</h4>
-<p><strong>TL;DR</strong>: <code class="highlighter-rouge">$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$</code>, to minimise the gap between our lower-bound and the likelihood under current parameters <code class="highlighter-rouge">$\theta$</code>, set our variational distribution to be the posterior.
+<h2 id="23-detailed-derivation">2.3 Detailed Derivation</h2>
+<h3 id="e-step">E-Step</h3>
+<p>
+<p class="notice"><strong>TL;DR</strong>: <code class="highlighter-rouge">$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$</code>, to minimise the gap between our lower-bound and the likelihood under current parameters <code class="highlighter-rouge">$\theta$</code>, set our variational distribution to be the posterior.
 <p><strong>Proof</strong>: first, lets define how exactly a lower-bound arises and where on earth this <strong>variational distribution</strong> <code class="highlighter-rouge">$q$</code> comes from. Decompose the likelihood:
 <code class="highlighter-rouge">$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$</code>
 Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice <code class="highlighter-rouge">$q$</code> (coz why not?):
@@ -240,8 +244,9 @@ after all this faff, we see to minimise the gap (objective) between the likeliho
 \arg \min _{q}(\log p(X | \theta)-\mathcal{L}(\theta, q)) = \arg \min _{q}\mathrm{KL}\left(q\left(z_{i}\right) \| p\left(z_{i} | \theta, x_{i}\right)\right)
 $$</code>
 so effectively, <strong>E</strong>-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution <code class="highlighter-rouge">$q$</code> w.r.t. model posterior <code class="highlighter-rouge">$p\left(z_{i} | \theta, x_{i}\right)$</code>. There is <strong>no guarantee</strong> that the posterior has a closed-form representation. This is where the rich literature of <strong>variational inference</strong> comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set <code class="highlighter-rouge">$q$</code> to be equal to the posterior.
-<h4 id="m-step">M-Step</h4>
-<p><strong>TL;DR</strong> given a fixed variational distribution <code class="highlighter-rouge">$q$</code>, maximise the data plus latent variable’s joint likelihood w.r.t. model parameters <code class="highlighter-rouge">$\theta$</code>, i.e. <code class="highlighter-rouge">$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$</code> where latent variables <strong>come from our variational ditribution</strong> <code class="highlighter-rouge">$q$</code>.
+<h3 id="m-step">M-Step</h3>
+<p>
+<p class="notice"><strong>TL;DR</strong> given a fixed variational distribution <code class="highlighter-rouge">$q$</code>, maximise the data and latent variable’s joint likelihood w.r.t. model parameters <code class="highlighter-rouge">$\theta$</code>, i.e. <code class="highlighter-rouge">$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$</code> where latent variables <strong>come from our variational ditribution</strong> <code class="highlighter-rouge">$q$</code>.
 <p>Recall from <strong>E</strong>-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. <code class="highlighter-rouge">$\theta$</code>, the only difference is <strong>we can easily perform this maximisation</strong> since we know our distribution <code class="highlighter-rouge">$q$</code> (normally it is a Gaussian distribution). Writing the whole expectation term out:
 <code class="highlighter-rouge">$$
 \arg\max_\theta \mathcal{L}(\theta, q) = \arg\max_\theta \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
@@ -272,7 +277,7 @@ Again, we definitely know what <code class="highlighter-rouge">$p(X, Z | \theta)
 <ul class="related-posts">
 </aside>
            <footer>
-    <span>© 2020 Tom Lu. Powered by Jekyll & Dactl
+    <span>© 2020. Powered by Jekyll & Dactl
 </span>
     <span>written by Tom Lu</span>
 </footer>

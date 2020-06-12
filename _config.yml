@@ -7,7 +7,7 @@ url                          : "http://xl402.github.io" # the base hostname & pr
 blog:
   title                      : Lu Blog
   description                  : >
-                               © 2020 Tom Lu. Powered by Jekyll & Dactl
+                               © 2020. Powered by Jekyll & Dactl
 
 # Layout configuration
   logo_path                  : #"assets/img/dactl.svg" # path to logo file

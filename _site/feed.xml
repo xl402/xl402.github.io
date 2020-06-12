@@ -2,12 +2,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Lu Blog</title>
-    <description>© 2020 Tom Lu. Powered by Jekyll &amp; Dactl
+    <description>© 2020. Powered by Jekyll &amp; Dactl
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 13 Jun 2020 00:09:37 +0100</pubDate>
-    <lastBuildDate>Sat, 13 Jun 2020 00:09:37 +0100</lastBuildDate>
+    <pubDate>Sat, 13 Jun 2020 00:43:11 +0100</pubDate>
+    <lastBuildDate>Sat, 13 Jun 2020 00:43:11 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -53,12 +53,13 @@ now we explicitly add in the conditional distribution using the rule of marginal
 $$&lt;/code&gt;
 where for simplicity, we assume &lt;strong&gt;discrete distribution&lt;/strong&gt; for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; (derivation holds if you replace the sum with an integral). The support for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; is &lt;code class=&quot;highlighter-rouge&quot;&gt;$[0, 1, \cdots, c]$&lt;/code&gt;, i.e. it is categorical.&lt;/p&gt;
 
-&lt;p&gt;That’s it! EM tries to find &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; that maximises the likelihood of our data, and through some maths we have shown:
-&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
+&lt;p&gt;That’s it! EM tries to find &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; that maximises the likelihood of our data, and through some maths we have shown:&lt;/p&gt;
+
+&lt;p class=&quot;notice&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \max _{\theta} p(X | \theta) = \max _{\theta} \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)
 $$&lt;/code&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;22-graphical-representation-of-the-solution&quot;&gt;2.2 Graphical representation of the solution&lt;/h3&gt;
+&lt;h2 id=&quot;22-graphical-representation-of-the-solution&quot;&gt;2.2 Graphical representation of the solution&lt;/h2&gt;
 
 &lt;p&gt;Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.&lt;/p&gt;
 
@@ -75,17 +76,20 @@ $$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;Derivation later will show exactly how we have arrived at &lt;strong&gt;E&lt;/strong&gt; and &lt;strong&gt;M&lt;/strong&gt; steps, but jumping ahead, these two steps are equivalent to:&lt;/p&gt;
 
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: set &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; to be equal (or approximately equal) to the posterior distribution, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^k(z_i) = p(z_i|\theta_i^k, x_i)$&lt;/code&gt; where &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt; denotes the timestep in our iteration.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: under our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;, find a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which maximises the data likelihood, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
+&lt;div class=&quot;notice&quot;&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: set &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; to be equal (or approximately equal) to the posterior distribution, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^k(z_i) = p(z_i|\theta_i^k, x_i)$&lt;/code&gt; where &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt; denotes the timestep in our iteration.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: under our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;, find a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which maximises the data likelihood, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$&lt;/code&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;/p&gt;
 
 &lt;p&gt;Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own &lt;strong&gt;variational distribution&lt;/strong&gt; which is a simple function. At each timestep, we approximate or set this function to the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(Z|X,\theta)$&lt;/code&gt; (&lt;strong&gt;E&lt;/strong&gt;-step), and we maximises the likelihood of our data-points under this function instead (&lt;strong&gt;M&lt;/strong&gt;-step). Alternating these two procedures, we are guaranteed to reach a &lt;strong&gt;local optima&lt;/strong&gt; (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).&lt;/p&gt;
 
-&lt;h3 id=&quot;23-detailed-derivation&quot;&gt;2.3 Detailed Derivation&lt;/h3&gt;
-&lt;h4 id=&quot;e-step&quot;&gt;E-Step&lt;/h4&gt;
-&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$&lt;/code&gt;, to minimise the gap between our lower-bound and the likelihood under current parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, set our variational distribution to be the posterior.&lt;/p&gt;
-
+&lt;h2 id=&quot;23-detailed-derivation&quot;&gt;2.3 Detailed Derivation&lt;/h2&gt;
+&lt;h3 id=&quot;e-step&quot;&gt;E-Step&lt;/h3&gt;
+&lt;p&gt;&lt;/p&gt;
+&lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$&lt;/code&gt;, to minimise the gap between our lower-bound and the likelihood under current parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, set our variational distribution to be the posterior.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Proof&lt;/strong&gt;: first, lets define how exactly a lower-bound arises and where on earth this &lt;strong&gt;variational distribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; comes from. Decompose the likelihood:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$&lt;/code&gt;
 Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; (coz why not?):
@@ -140,10 +144,9 @@ after all this faff, we see to minimise the gap (objective) between the likeliho
 $$&lt;/code&gt;
 so effectively, &lt;strong&gt;E&lt;/strong&gt;-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; w.r.t. model posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p\left(z_{i} | \theta, x_{i}\right)$&lt;/code&gt;. There is &lt;strong&gt;no guarantee&lt;/strong&gt; that the posterior has a closed-form representation. This is where the rich literature of &lt;strong&gt;variational inference&lt;/strong&gt; comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; to be equal to the posterior.&lt;/p&gt;
 
-&lt;h4 id=&quot;m-step&quot;&gt;M-Step&lt;/h4&gt;
-
-&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt; given a fixed variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, maximise the data plus latent variable’s joint likelihood w.r.t. model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$&lt;/code&gt; where latent variables &lt;strong&gt;come from our variational ditribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;.&lt;/p&gt;
-
+&lt;h3 id=&quot;m-step&quot;&gt;M-Step&lt;/h3&gt;
+&lt;p&gt;&lt;/p&gt;
+&lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt; given a fixed variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, maximise the data and latent variable’s joint likelihood w.r.t. model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$&lt;/code&gt; where latent variables &lt;strong&gt;come from our variational ditribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Recall from &lt;strong&gt;E&lt;/strong&gt;-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, the only difference is &lt;strong&gt;we can easily perform this maximisation&lt;/strong&gt; since we know our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; (normally it is a Gaussian distribution). Writing the whole expectation term out:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg\max_\theta \mathcal{L}(\theta, q) = \arg\max_\theta \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
