@@ -131,7 +131,7 @@
      </div>
    </div>
  </div>
-   <p class="lead">(<code class="highlighter-rouge">$\approx$</code> 30min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.
+   <p class="lead">(<code>$\approx$</code> 30min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.
 <p>
 <h1 id="1-introduction">1. Introduction</h1>
 <p>Expectation maximisation (EM) is one of those things that I was taught several times at University, each time it was explained slightly differently, and I was confused by it every single time. The confusion is mostly because we never implemented any of the EM algorithms through Python, and EMs were always introduced to solve a <strong>specific</strong> problem.
@@ -142,131 +142,131 @@
 <p>EM aims to tackle a family of models termed <strong>latent variable models</strong> (examples like GMM, LDA, etc). Their graphical representation can be compactly represented as:
 <center><img src="https://i.imgur.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
 <p>
-<p>where <code class="highlighter-rouge">$x_i$</code> is our data-points in the dataset <code class="highlighter-rouge">$X = \{x_0, \cdots x_N\}$</code> and <code class="highlighter-rouge">$z_i$</code> is the latent variables associated with each datapoint. The edge represents that <code class="highlighter-rouge">$x_i$</code> is conditioned by <code class="highlighter-rouge">$z_i$</code>. Albeit this graphical model looks simple, to fully specify the model, we need to:
+<p>where <code>$x_i$</code> is our data-points in the dataset <code>$X = \{x_0, \cdots x_N\}$</code> and <code>$z_i$</code> is the latent variables associated with each datapoint. The edge represents that <code>$x_i$</code> is conditioned by <code>$z_i$</code>. Albeit this graphical model looks simple, to fully specify the model, we need to:
 <ul>
- <li>Specify prior distribution of <code class="highlighter-rouge">$z_i$</code>
- <li>Specify the conditional distribution <code class="highlighter-rouge">$p(x_i|z_i)$</code>
+ <li>Specify prior distribution of <code>$z_i$</code>
+ <li>Specify the conditional distribution <code>$p(x_i|z_i)$</code>
 </ul>
-<p>both these two distributions can be arbitrarily complex (which is a problem during both model fitting and inference). If we <strong>summarise</strong> all the model parameters associated with our problem to be <code class="highlighter-rouge">$\theta$</code>, our goal becomes finding a set of parameters <code class="highlighter-rouge">$\theta$</code> which <strong>maximises the likelihood</strong> of our dataset <code class="highlighter-rouge">$X$</code> given our model:
-<code class="highlighter-rouge">$$
+<p>both these two distributions can be arbitrarily complex (which is a problem during both model fitting and inference). If we <strong>summarise</strong> all the model parameters associated with our problem to be <code>$\theta$</code>, our goal becomes finding a set of parameters <code>$\theta$</code> which <strong>maximises the likelihood</strong> of our dataset <code>$X$</code> given our model:
+<code>$$
 \max_{\theta}p(X|\theta)
 $$</code>
 We assume our datapoints are <em>i.i.d</em> under our model, therefore:
-<code class="highlighter-rouge">$$
+<code>$$
 \max_{\theta}p(X|\theta) = \max_\theta \prod p(x_i|\theta)
 $$</code>
 simplifying the product terms with a sum by maximising the log-likelihood:
-<code class="highlighter-rouge">$$
+<code>$$
 \max_{\theta}\log p(X|\theta) = \max_\theta \sum_i \log p(x_i|\theta)
 $$</code>
 now we explicitly add in the conditional distribution using the rule of marginalisation:
-<code class="highlighter-rouge">$$
+<code>$$
 \max_{\theta}\sum_i \log\left(\sum_c p(x_i, z_i=c|\theta)\right)
 $$</code>
-where for simplicity, we assume <strong>discrete distribution</strong> for <code class="highlighter-rouge">$z_i$</code> (derivation holds if you replace the sum with an integral). The support for <code class="highlighter-rouge">$z_i$</code> is <code class="highlighter-rouge">$[0, 1, \cdots, c]$</code>, i.e. it is categorical.
-<p>That’s it! EM tries to find <code class="highlighter-rouge">$\theta$</code> that maximises the likelihood of our data, and through some maths we have shown:
-<p class="notice"><code class="highlighter-rouge">$$
+where for simplicity, we assume <strong>discrete distribution</strong> for <code>$z_i$</code> (derivation holds if you replace the sum with an integral). The support for <code>$z_i$</code> is <code>$[0, 1, \cdots, c]$</code>, i.e. it is categorical.
+<p>That’s it! EM tries to find <code>$\theta$</code> that maximises the likelihood of our data, and through some maths we have shown:
+<p class="notice"><code>$$
 \max _{\theta} p(X | \theta) = \max _{\theta} \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)
 $$</code>
-<p>Of course, one question is why can’t we directly differentiate the (log) likelihood? As we will see later with GMM, we cannot obtain an analytical equation for <code class="highlighter-rouge">$\theta$</code> via direct differentiation!
+<p>Of course, one question is why can’t we directly differentiate the (log) likelihood? As we will see later with GMM, we cannot obtain an analytical equation for <code>$\theta$</code> via direct differentiation!
 <h2 id="22-graphical-representation-of-the-solution">2.2 Graphical representation of the solution</h2>
 <p>Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.
-<p>We wish to find a set of parameters <code class="highlighter-rouge">$\theta$</code> which maximises the likelihood <code class="highlighter-rouge">$\log(p(X|\theta))$</code>. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a <em>lower bound</em> <code class="highlighter-rouge">$\mathcal{L}(q, \theta)$</code>, which is <strong>below the likelihood</strong> at all <code class="highlighter-rouge">$\theta$</code> values. At timestep <code class="highlighter-rouge">$k$</code>, the EM update rule are as follows:
+<p>We wish to find a set of parameters <code>$\theta$</code> which maximises the likelihood <code>$\log(p(X|\theta))$</code>. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a <em>lower bound</em> <code>$\mathcal{L}(q, \theta)$</code>, which is <strong>below the likelihood</strong> at all <code>$\theta$</code> values. At timestep <code>$k$</code>, the EM update rule are as follows:
 <ul>
- <li><strong>E</strong>-step: fix <code class="highlighter-rouge">$\theta$</code>, find some arbitrary <em>variational distribution</em> <code class="highlighter-rouge">$q(z_i)$</code> which maximises the lower-bound, i.e. <code class="highlighter-rouge">$q^{k+1} = \arg\max_{q}\mathcal{L}(\theta^k, q)$</code>.
- <li><strong>M</strong>-step: fix <code class="highlighter-rouge">$q$</code>, find model parameters <code class="highlighter-rouge">$\theta$</code> that maximises our current lower-bound, i.e. <code class="highlighter-rouge">$\theta^{k+1} = \arg\max_\theta \mathcal{L}(\theta, q^{k+1})$</code>
+ <li><strong>E</strong>-step: fix <code>$\theta$</code>, find some arbitrary <em>variational distribution</em> <code>$q(z_i)$</code> which maximises the lower-bound, i.e. <code>$q^{k+1} = \arg\max_{q}\mathcal{L}(\theta^k, q)$</code>.
+ <li><strong>M</strong>-step: fix <code>$q$</code>, find model parameters <code>$\theta$</code> that maximises our current lower-bound, i.e. <code>$\theta^{k+1} = \arg\max_\theta \mathcal{L}(\theta, q^{k+1})$</code>
 </ul>
-<p>One thing to get our head around is that in <strong>E</strong>-step, we are essentially taking derivative w.r.t. a <strong>function</strong> <code class="highlighter-rouge">$q(z_i)$</code>. These two steps can be seen more clearly in the picture below.
+<p>One thing to get our head around is that in <strong>E</strong>-step, we are essentially taking derivative w.r.t. a <strong>function</strong> <code>$q(z_i)$</code>. These two steps can be seen more clearly in the picture below.
 <p>
 <center><img src="https://i.imgur.com/8egXBCs.gif" alt="drawing" width="600" /></center>
 <p>Derivation later will show exactly how we have arrived at <strong>E</strong> and <strong>M</strong> steps, but jumping ahead, these two steps are equivalent to:
 <div class="notice">
  <ul>
-   <li><strong>E</strong>-step: set <em>variational distribution</em> <code class="highlighter-rouge">$q(z_i)$</code> to be equal (or approximately equal) to the posterior distribution, i.e. <code class="highlighter-rouge">$q^k(z_i) = p(z_i|\theta_i^k, x_i)$</code> where <code class="highlighter-rouge">$k$</code> denotes the timestep in our iteration.
-   <li><strong>M</strong>-step: under our distribution <code class="highlighter-rouge">$q(z_i)$</code>, find a set of parameters <code class="highlighter-rouge">$\theta$</code> which maximises the data likelihood, i.e. <code class="highlighter-rouge">$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$</code>
+   <li><strong>E</strong>-step: set <em>variational distribution</em> <code>$q(z_i)$</code> to be equal (or approximately equal) to the posterior distribution, i.e. <code>$q^k(z_i) = p(z_i|\theta_i^k, x_i)$</code> where <code>$k$</code> denotes the timestep in our iteration.
+   <li><strong>M</strong>-step: under our distribution <code>$q(z_i)$</code>, find a set of parameters <code>$\theta$</code> which maximises the data likelihood, i.e. <code>$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$</code>
  </ul>
 </div>
 <p>
-<p>Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own <strong>variational distribution</strong> which is a simple function. At each timestep, we approximate or set this function to the posterior distribution <code class="highlighter-rouge">$p(Z|X,\theta)$</code> (<strong>E</strong>-step), and we maximises the likelihood of our data-points under this function instead (<strong>M</strong>-step). Alternating these two procedures, we are guaranteed to reach a <strong>local optima</strong> (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).
+<p>Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own <strong>variational distribution</strong> which is a simple function. At each timestep, we approximate or set this function to the posterior distribution <code>$p(Z|X,\theta)$</code> (<strong>E</strong>-step), and we maximises the likelihood of our data-points under this function instead (<strong>M</strong>-step). Alternating these two procedures, we are guaranteed to reach a <strong>local optima</strong> (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).
 <h2 id="23-detailed-derivation">2.3 Detailed Derivation</h2>
 <h3 id="e-step">E-Step</h3>
-<p class="notice"><strong>TL;DR</strong>: <code class="highlighter-rouge">$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$</code>, to minimise the gap between our lower-bound and the likelihood under current parameters <code class="highlighter-rouge">$\theta$</code>, set our variational distribution to be the posterior.
-<p><strong>Proof</strong>: first, lets define how exactly a lower-bound arises and where on earth this <strong>variational distribution</strong> <code class="highlighter-rouge">$q$</code> comes from. Decompose the likelihood:
-<code class="highlighter-rouge">$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$</code>
-Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice <code class="highlighter-rouge">$q$</code> (coz why not?):
-<code class="highlighter-rouge">$$\log p(X | \theta) = \sum_{i} \log\left( \sum_{c} q\left(z_{i}=c\right) \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)$$</code>
+<p class="notice"><strong>TL;DR</strong>: <code>$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$</code>, to minimise the gap between our lower-bound and the likelihood under current parameters <code>$\theta$</code>, set our variational distribution to be the posterior.
+<p><strong>Proof</strong>: first, lets define how exactly a lower-bound arises and where on earth this <strong>variational distribution</strong> <code>$q$</code> comes from. Decompose the likelihood:
+<code>$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$</code>
+Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice <code>$q$</code> (coz why not?):
+<code>$$\log p(X | \theta) = \sum_{i} \log\left( \sum_{c} q\left(z_{i}=c\right) \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)$$</code>
 which is equivalent to:
-<code class="highlighter-rouge">$$\log p(X|\theta) = \sum_{i} \log \mathbb{E}_{z_{i} \sim q} \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}$$</code>
-now we can utilise Jensen’s inequality to obtain a lower bound for this equality. As a reminder, for any concave function (such as <code class="highlighter-rouge">$\log(x)$</code> in our case), <code class="highlighter-rouge">$f (\mathbb{E}[x]) \geqslant \mathbb{E}[f (x)]$</code>. We can therefore write the equation above as:
-<code class="highlighter-rouge">$$
+<code>$$\log p(X|\theta) = \sum_{i} \log \mathbb{E}_{z_{i} \sim q} \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}$$</code>
+now we can utilise Jensen’s inequality to obtain a lower bound for this equality. As a reminder, for any concave function (such as <code>$\log(x)$</code> in our case), <code>$f (\mathbb{E}[x]) \geqslant \mathbb{E}[f (x)]$</code>. We can therefore write the equation above as:
+<code>$$
 \log p(X|\theta)\geq \sum_{i} \mathbb{E}_{z_{i}\sim q} \log \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}
 $$</code>
 expanding the expectation out:
-<code class="highlighter-rouge">$$
+<code>$$
 \log p(X|\theta)\geq\sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)} = \mathcal{L}(\theta, q)
 $$</code>
-Our objective has the become <strong>minimising the gap</strong> between this lower-bound by optimising our arbitrary distribution <code class="highlighter-rouge">$q$</code>:
-<code class="highlighter-rouge">$$
+Our objective has the become <strong>minimising the gap</strong> between this lower-bound by optimising our arbitrary distribution <code>$q$</code>:
+<code>$$
 \arg\min_q \text{Objective} = \arg\min_q \left( \log p(X|\theta) - \mathcal{L}(\theta, q)\right)
 $$</code>
 more maths:
-<code class="highlighter-rouge">$$
+<code>$$
 \text{Objective} = \sum_{i} \log p\left(x_{i} | \theta\right) - \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
 $$</code>
-for the first term, we multiply it with <code class="highlighter-rouge">$1 = \sum_c q(z_i=c)$</code>:
-<code class="highlighter-rouge">$$
+for the first term, we multiply it with <code>$1 = \sum_c q(z_i=c)$</code>:
+<code>$$
  =\sum_{i} \left(\log p\left(x_{i} | \theta\right)\sum_{c} q\left(z_{i}=c\right)\right) - \sum_{i} \sum_{c} \cdots
 $$</code>
 now we can move both summations out:
-<code class="highlighter-rouge">$$
+<code>$$
 =\sum_{i}\sum_{c}\left(\log p\left(x_{i} | \theta\right) q\left(z_{i}=c\right) - q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)} \right)
 $$</code>
-<code class="highlighter-rouge">$$
+<code>$$
  =\sum_{i} \sum_{c} \left(q\left(z_{i}=c\right) \left(\log p\left(x_{i} | \theta\right) - \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)\right)
 $$</code>
-<code class="highlighter-rouge">$$
+<code>$$
 =\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\left(\log \left(\frac{p\left(x_{i} | \theta\right) q\left(z_{i}=c\right)}{p\left(x_{i}, z_{i}=c | \theta\right)}\right)\right)\right)
 $$</code>
 re-write the joint distribution of the denominator inside the log:
-<code class="highlighter-rouge">$$
+<code>$$
 =\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\left(\log \left(\frac{p\left(x_{i} | \theta\right) q\left(z_{i}=c\right)}{p(x_i|\theta)p(z_i=c|\theta, x_i)}\right)\right)\right)
 $$</code>
-cancelling out the <code class="highlighter-rouge">$p\left(x_{i} | \theta\right)$</code> we obtain:
-<code class="highlighter-rouge">$$
+cancelling out the <code>$p\left(x_{i} | \theta\right)$</code> we obtain:
+<code>$$
 =\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\log \left(\frac{ q\left(z_{i}=c\right)}{ p\left(z_{i}=c | \theta, x_{i}\right)}\right)\right)
 $$</code>
-observe that the summation under <code class="highlighter-rouge">$c$</code> term corresponds to the KL divergence between <code class="highlighter-rouge">$q$</code> and <code class="highlighter-rouge">$p$</code>, we therefore obtain:
-<code class="highlighter-rouge">$$
+observe that the summation under <code>$c$</code> term corresponds to the KL divergence between <code>$q$</code> and <code>$p$</code>, we therefore obtain:
+<code>$$
 \text{Objective} = \text{KL}(q(z_i)|| p(z_i|\theta, x_i))
 $$</code>
 after all this faff, we see to minimise the gap (objective) between the likelihood and our lower-bound is equivalent to:
-<code class="highlighter-rouge">$$
+<code>$$
 \arg \min _{q}(\log p(X | \theta)-\mathcal{L}(\theta, q)) = \arg \min _{q}\mathrm{KL}\left(q\left(z_{i}\right) \| p\left(z_{i} | \theta, x_{i}\right)\right)
 $$</code>
-so effectively, <strong>E</strong>-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution <code class="highlighter-rouge">$q$</code> w.r.t. model posterior <code class="highlighter-rouge">$p\left(z_{i} | \theta, x_{i}\right)$</code>. There is <strong>no guarantee</strong> that the posterior has a closed-form representation. This is where the rich literature of <strong>variational inference</strong> comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set <code class="highlighter-rouge">$q$</code> to be equal to the posterior.
+so effectively, <strong>E</strong>-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution <code>$q$</code> w.r.t. model posterior <code>$p\left(z_{i} | \theta, x_{i}\right)$</code>. There is <strong>no guarantee</strong> that the posterior has a closed-form representation. This is where the rich literature of <strong>variational inference</strong> comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set <code>$q$</code> to be equal to the posterior.
 <h3 id="m-step">M-Step</h3>
-<p class="notice"><strong>TL;DR</strong> given a fixed variational distribution <code class="highlighter-rouge">$q$</code>, maximise the data and latent variable’s joint likelihood w.r.t. model parameters <code class="highlighter-rouge">$\theta$</code>, i.e. <code class="highlighter-rouge">$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$</code> where latent variables <strong>come from our variational ditribution</strong> <code class="highlighter-rouge">$q$</code>.
-<p>Recall from <strong>E</strong>-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. <code class="highlighter-rouge">$\theta$</code>, the only difference is <strong>we can easily perform this maximisation</strong> since we know our distribution <code class="highlighter-rouge">$q$</code> (normally it is a Gaussian distribution). Writing the whole expectation term out:
-<code class="highlighter-rouge">$$
+<p class="notice"><strong>TL;DR</strong> given a fixed variational distribution <code>$q$</code>, maximise the data and latent variable’s joint likelihood w.r.t. model parameters <code>$\theta$</code>, i.e. <code>$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$</code> where latent variables <strong>come from our variational ditribution</strong> <code>$q$</code>.
+<p>Recall from <strong>E</strong>-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. <code>$\theta$</code>, the only difference is <strong>we can easily perform this maximisation</strong> since we know our distribution <code>$q$</code> (normally it is a Gaussian distribution). Writing the whole expectation term out:
+<code>$$
 \arg\max_\theta \mathcal{L}(\theta, q) = \arg\max_\theta \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
 $$</code>
 splitting the terms within the log:
-<code class="highlighter-rouge">$$
+<code>$$
 \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \left(\log p\left(x_{i}, z_{i}=c | \theta\right) - \log q\left(z_{i}=c\right)\right)
 $$</code>
-the last term is independent of <code class="highlighter-rouge">$\theta$</code>:
-<code class="highlighter-rouge">$$
+the last term is independent of <code>$\theta$</code>:
+<code>$$
 \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right)\log p\left(x_{i}, z_{i}=c | \theta\right) + \text{const}.
 $$</code>
-condensing the sum over <code class="highlighter-rouge">$c$</code> into expectation, dropping the constant:
-<code class="highlighter-rouge">$$
+condensing the sum over <code>$c$</code> into expectation, dropping the constant:
+<code>$$
 \arg \max _{\theta}\sum_{i}\mathbb{E}_{z_i}\left[ \log p(x_i,z_i=c|\theta)\right] = \mathbb{E}_{Z\sim q}\left[ \log p(X,Z|\theta)\right]
 $$</code>
-So the <strong>M</strong>-step is simply maximising the joint distribution between collection of latent variables <code class="highlighter-rouge">$Z$</code> and data points <code class="highlighter-rouge">$X$</code> <strong>under the variational distribution</strong> <code class="highlighter-rouge">$q$</code>:
-<code class="highlighter-rouge">$$
+So the <strong>M</strong>-step is simply maximising the joint distribution between collection of latent variables <code>$Z$</code> and data points <code>$X$</code> <strong>under the variational distribution</strong> <code>$q$</code>:
+<code>$$
 \hat{\theta} = \arg \max _{\theta}\mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]
 $$</code>
-Again, we definitely know what <code class="highlighter-rouge">$p(X, Z | \theta)$</code> is, since we needed it to set up our graphical model. However, maximisation w.r.t. <code class="highlighter-rouge">$\theta$</code> can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters <code class="highlighter-rouge">$\theta$</code>.
+Again, we definitely know what <code>$p(X, Z | \theta)$</code> is, since we needed it to set up our graphical model. However, maximisation w.r.t. <code>$\theta$</code> can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters <code>$\theta$</code>.
 <h1 id="3-em-in-practice-gaussian-mixture-model">3. EM in Practice: Gaussian Mixture Model</h1>
 <p>Here we unleash the EM algorithm on Gaussian Mixture Model (GMM), For a quick intuition on how GMM update rules work, here is a link to <a href="https://www.youtube.com/watch?v=XepXtl9YKwc&amp;t=242s"><em>StatQuest’s</em></a> video. I have to say, update rule for GMM is fairly intuitive, and videos like this is a tiny bit misleading. As it is not easy to shoehorn the general EM algorithm into this sort of intuition. Instead, we will not skip (too much) on the maths and will derive exactly how GMM update rules arise from EM.
 <h2 id="31-derivation">3.1 Derivation</h2>
@@ -277,195 +277,135 @@ Again, we definitely know what <code class="highlighter-rouge">$p(X, Z | \theta)
 <p>Here we define exactly what the model parameters are for a GMM. First let’s look at what GMM is trying to achieve:
 <center><img src="https://i.imgur.com/AGe3avl.png" alt="drawing" width="600" /></center>
 <p>Left figure above is the data points that you have obtained, through some prior knowledge or by inspecting the plots, <strong>you believe</strong> that the data points come from <strong>three Gaussian distributions</strong>, and you wish to fit the Gaussian centres and variances to the data points (shown on the right).
-<p>To apply latent variable modelling, we think about “how do we <strong>generate</strong> these data points with a probabilistic model?”. Let <code class="highlighter-rouge">$z_i$</code> follow a categorical distribution (three categories) which define the proportion of data points that belong to each cluster. When <strong>conditioned</strong> on the categories, the data point <code class="highlighter-rouge">$x_i$</code> follows a gaussian distribution. Model parameters are therefore <code class="highlighter-rouge">$\theta = [\pi_1, \cdots, \pi_c, \mu_1, \cdots, \mu_c, \sigma^2_1, \cdots \sigma^2_c]$</code>, which are the distribution over categories, mean and standard deviaiton of each cluster centre. We restrict ourselves to fitting <strong>isotropic</strong> Gaussians, although in practice, you can find the MLE covariance matrix (maths will of course be more disgusting).
+<p>To apply latent variable modelling, we think about “how do we <strong>generate</strong> these data points with a probabilistic model?”. Let <code>$z_i$</code> follow a categorical distribution (three categories) which define the proportion of data points that belong to each cluster. When <strong>conditioned</strong> on the categories, the data point <code>$x_i$</code> follows a gaussian distribution. Model parameters are therefore <code>$\theta = [\pi_1, \cdots, \pi_c, \mu_1, \cdots, \mu_c, \sigma^2_1, \cdots \sigma^2_c]$</code>, which are the distribution over categories, mean and standard deviaiton of each cluster centre. We restrict ourselves to fitting <strong>isotropic</strong> Gaussians, although in practice, you can find the MLE covariance matrix (maths will of course be more disgusting).
 <center><img src="https://i.imgur.com/1Mb2T0E.png" alt="drawing" width="600" /></center>
 <p>Given this mode, we can write down the <strong>likelihood of our data points</strong> under the model:
-<p><code class="highlighter-rouge">$$
+<p><code>$$
 p(x_i |\theta) = \sum_c p(x_i|z_i=c, \theta)p(z_i=c|\theta) = \sum_c p(x_i|z_i=c, \theta) \pi_c
 $$</code>
-<code class="highlighter-rouge">$$
+<code>$$
 p(X |\theta) = \prod_i \sum_c p(x_i|z_i=c, \theta) \pi_c= \prod_i \sum_c \mathcal{N}(x_i;\mu_c, \sigma^2_c) \pi_c
 $$</code>
 This completes our model definition for a GMM. <strong>Why don’t we directly maximise the likelihood w.r.t. model parameters?</strong> Let’s see:
-<code class="highlighter-rouge">$$
+<code>$$
 \log p(X |\theta) = \sum_i \log \sum_{c} \mathcal{N}\left(x_{i} ; \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}
 $$</code>
-<code class="highlighter-rouge">$$
+<code>$$
 \nabla_\theta \log p(X|\theta) = \sum_i  \nabla_\theta \log\left( \sum_{c} \mathcal{N}\left(x_{i} ; \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}\right)
 $$</code>
 And we are stuck… good luck dealing with the log of sum of exponential term above. This is why EM is used to solve GMMs.
 <h3 id="e-step-1">E-Step</h3>
-<p>Recall in EM, the <strong>E</strong>-step is equivalent to setting our variational distribution <code class="highlighter-rouge">$q(z_i)$</code> to be equal or approximately equal to the posterior <code class="highlighter-rouge">$p(z_i|x_i,\theta)$</code>. In the case of GMM we can obtain the analytical posterior. Applying Bayes’ rule:
-<code class="highlighter-rouge">$$
+<p>Recall in EM, the <strong>E</strong>-step is equivalent to setting our variational distribution <code>$q(z_i)$</code> to be equal or approximately equal to the posterior <code>$p(z_i|x_i,\theta)$</code>. In the case of GMM we can obtain the analytical posterior. Applying Bayes’ rule:
+<code>$$
 q(z_i=c) = p(z_i=c|x_i,\theta) = \dfrac{p(x_i|z_i=c,\theta)p(z_i=c|\theta)}{\sum_k p(x_i|z_i=k,\theta)p(z_i=k|\theta)}
 $$</code>
-Don’t be confused by the index <code class="highlighter-rouge">$k$</code> in the denominator, we are just marginalising over all cluster centre categories (in our example, 1 to 3). In <strong>E-step</strong> we <strong>fix</strong> all model parameters, the posterior above therefore takes the form:
-<code class="highlighter-rouge">$$
+Don’t be confused by the index <code>$k$</code> in the denominator, we are just marginalising over all cluster centre categories (in our example, 1 to 3). In <strong>E-step</strong> we <strong>fix</strong> all model parameters, the posterior above therefore takes the form:
+<code>$$
 q(z_i=c) = \dfrac{\mathcal{N}(x_i|\mu_c,\sigma^2_c)\pi_c}{\sum_k \mathcal{N}(x_i|\mu_k,\sigma^2_k)\pi_k}
 $$</code>
 <p class="notice">This result is fairly intuitive -
-you are effectively asking: what is the chance of this data point belonging to cluster <code class="highlighter-rouge">$c$</code>, given the current cluster centres and deviations.
-<p>For each data point, we do a soft (probabilistic) assignment on which cluster it comes from. Which turns out to be the probability of it <strong>being generated</strong> by cluster <code class="highlighter-rouge">$c$</code> (numerator), divided by the sum of probabilities of it being generated by all clusters (denominator).
+you are effectively asking: what is the chance of this data point belonging to cluster <code>$c$</code>, given the current cluster centres and deviations.
+<p>For each data point, we do a soft (probabilistic) assignment on which cluster it comes from. Which turns out to be the probability of it <strong>being generated</strong> by cluster <code>$c$</code> (numerator), divided by the sum of probabilities of it being generated by all clusters (denominator).
 <h3 id="m-step-1">M-Step</h3>
-<p>Recall in <strong>M</strong>-step, we maximise the joint probability distribution under our own variational distribution <code class="highlighter-rouge">$q(z_i)$</code>. I will just copy-paste from the previous section:
-<code class="highlighter-rouge">$$
+<p>Recall in <strong>M</strong>-step, we maximise the joint probability distribution under our own variational distribution <code>$q(z_i)$</code>. I will just copy-paste from the previous section:
+<code>$$
 \theta^* = \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log p\left(x_{i}, z_{i}=c | \theta\right) = \arg\max_\theta \mathcal{G}
 $$</code>
-where <code class="highlighter-rouge">$\mathcal{G}$</code> is just a short hand for the joint density, and $\theta$ are the mixture proportion <code class="highlighter-rouge">$\pi_c$</code> terms, the Gaussian centres <code class="highlighter-rouge">$\mu_c$</code> and <code class="highlighter-rouge">$\sigma^2_c$</code> terms.
-<p>Note that here, <code class="highlighter-rouge">$q(z_i)$</code> is fixed, even though from the <strong>E</strong>-step they depend on our parameters. Writing <code class="highlighter-rouge">$\mathcal{G}$</code> out fully:
-<p><code class="highlighter-rouge">$$
+where <code>$\mathcal{G}$</code> is just a short hand for the joint density, and $\theta$ are the mixture proportion <code>$\pi_c$</code> terms, the Gaussian centres <code>$\mu_c$</code> and <code>$\sigma^2_c$</code> terms.
+<p>Note that here, <code>$q(z_i)$</code> is fixed, even though from the <strong>E</strong>-step they depend on our parameters. Writing <code>$\mathcal{G}$</code> out fully:
+<p><code>$$
 \mathcal{G} = \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log\left(\dfrac{1}{\sigma_c \sqrt{2\pi}}\exp\left(\dfrac{-(x_i-\mu_c)^2}{2\sigma_c^2}\right)\pi_c\right)
 $$</code>
-<code class="highlighter-rouge">$$
+<code>$$
 = \sum_{i} \sum_{c} q\left(z_{i}=c\right)  \left(\log \dfrac{\pi_c}{\sigma_c\sqrt{2\pi}} - \dfrac{(x_i-\mu_c)^2}{2\sigma_c^2}\right)
 $$</code>
-This is all we need to obtain the analytical gradient with respect to model parameters <code class="highlighter-rouge">$\theta$</code>. For example, to get <code class="highlighter-rouge">$\mu_k$</code> (<code class="highlighter-rouge">$k$</code>th cluster mean):
-<code class="highlighter-rouge">$$
+This is all we need to obtain the analytical gradient with respect to model parameters <code>$\theta$</code>. For example, to get <code>$\mu_k$</code> (<code>$k$</code>th cluster mean):
+<code>$$
 \nabla_{\mu_k}\mathcal{G} = \sum_i q(z_i=k) \dfrac{x_i-\mu_k}{\sigma_c^2}
 $$</code>
-since for all <code class="highlighter-rouge">$c\neq k$</code> the gradient is zero. Setting above to zero (solve for optimum <code class="highlighter-rouge">$\mu_k$</code>):
-<code class="highlighter-rouge">$$
+since for all <code>$c\neq k$</code> the gradient is zero. Setting above to zero (solve for optimum <code>$\mu_k$</code>):
+<code>$$
 \mu_k = \dfrac{\sum_i q(z_i=k)x_i}{\sum_i q(z_i=k)}
 $$</code>
 The same can be done to $\sigma_k^2$ (via high school calculus) to obtain:
-<code class="highlighter-rouge">$$
+<code>$$
 \sigma_k^2 =\frac{\sum_{i}\left(x_{i}-\mu_{k}\right)^{2} q\left(z_{i}=k\right)}{\sum_{i} q\left(z_{i}=k\right)}
 $$</code>
-To get optimum mixing proportions <code class="highlighter-rouge">$\pi_k$</code> is more complicated, since we need to do <strong>constrained optimisation</strong> with <code class="highlighter-rouge">$\pi_k \geq 0$</code> and <code class="highlighter-rouge">$\sum_c \pi_c=1$</code> since it needs to be a probability distribution. This can be done through <a href="https://www.youtube.com/watch?v=yuqB-d5MjZA">Lagrange multipliers</a>. Here we actually omit the maths and jump straight into the result:
-<code class="highlighter-rouge">$$
+To get optimum mixing proportions <code>$\pi_k$</code> is more complicated, since we need to do <strong>constrained optimisation</strong> with <code>$\pi_k \geq 0$</code> and <code>$\sum_c \pi_c=1$</code> since it needs to be a probability distribution. This can be done through <a href="https://www.youtube.com/watch?v=yuqB-d5MjZA">Lagrange multipliers</a>. Here we actually omit the maths and jump straight into the result:
+<code>$$
 \pi_k = \dfrac{\sum_i q(z_i=k)}{N}
 $$</code>
-where <code class="highlighter-rouge">$N$</code> is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to <strong>re-estimate model parameters with our ‘self-labelled’ data points</strong> (labelled by our own variational distribution <code class="highlighter-rouge">$q$</code>). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to <strong>maximise likelihood of data points under our model</strong>.
+where <code>$N$</code> is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to <strong>re-estimate model parameters with our ‘self-labelled’ data points</strong> (labelled by our own variational distribution <code>$q$</code>). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to <strong>maximise likelihood of data points under our model</strong>.
 <h2 id="32-implementation">3.2 Implementation</h2>
-<p>Of course, any sane person would call <code class="highlighter-rouge">sklearn.mixture.GaussianMixture</code> and just do <code class="highlighter-rouge">GMM.fit(X)</code>. But that is way too efficient. We start with some standard import:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6</pre><td class="code"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="c"># bit confusing, one is used to draw from, the other is used for evaluation</span>
-<span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">multivariate_normal</span> <span class="k">as</span> <span class="n">mv_n</span>
-<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">numpy.testing</span> <span class="kn">import</span> <span class="n">assert_array_almost_equal</span>
-</pre></table>
-</div>
-</div>
+<p>Of course, any sane person would call <code>sklearn.mixture.GaussianMixture</code> and just do <code>GMM.fit(X)</code>. But that is way too efficient. We start with some standard import:<pre><code class="language-python">import numpy as np
+# bit confusing, one is used to draw from, the other is used for evaluation
+from numpy.random import multivariate_normal as mv_n
+from scipy.stats import multivariate_normal
+import matplotlib.pyplot as plt
+from numpy.testing import assert_array_almost_equal
+</code></pre>
 <h3 id="321-dataground-truth-generation">3.2.1 Data/Ground Truth Generation</h3>
-<p>First, let’s generate our dataset. Define the ground truth parameters that we wish to estimate:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7</pre><td class="code"><pre><span class="n">N</span> <span class="o">=</span> <span class="mi">500</span> <span class="c"># total number of data points</span>
-<span class="err">μ</span><span class="mi">1</span><span class="p">,</span> <span class="err">μ</span><span class="mi">2</span><span class="p">,</span> <span class="err">μ</span><span class="mi">3</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span> <span class="c"># cluster mean d = 2</span>
-<span class="c"># cluster standard deviation</span>
-<span class="err">σ</span><span class="mi">1</span><span class="p">,</span> <span class="err">σ</span><span class="mi">2</span><span class="p">,</span> <span class="err">σ</span><span class="mi">3</span> <span class="o">=</span> <span class="o">.</span><span class="mo">05</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="o">.</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="o">.</span><span class="mi">15</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span> <span class="c"># mixing proportions</span>
-<span class="c"># needs to be a valid categorical distribution</span>
-<span class="k">assert</span> <span class="nb">sum</span><span class="p">([</span><span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span><span class="p">])</span><span class="o">==</span><span class="mi">1</span>
-</pre></table>
-</div>
-</div>
-<p>The dataset is drawn according to our model:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6</pre><td class="code"><pre><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="err">μ</span><span class="mi">1</span><span class="p">,</span> <span class="err">μ</span><span class="mi">2</span><span class="p">,</span> <span class="err">μ</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="err">σ</span><span class="mi">1</span><span class="p">,</span> <span class="err">σ</span><span class="mi">2</span><span class="p">,</span> <span class="err">σ</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span><span class="p">]</span>
-<span class="n">X</span> <span class="o">=</span> <span class="p">[</span><span class="n">normal</span><span class="p">(</span><span class="err">μ</span><span class="p">,</span> <span class="err">σ</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="err">π</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span> <span class="k">for</span> <span class="err">μ</span><span class="p">,</span> <span class="err">σ</span><span class="p">,</span> <span class="err">π</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span><span class="p">)]</span>
-<span class="c"># Reshape to our N x d dataset</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<p>First, let’s generate our dataset. Define the ground truth parameters that we wish to estimate:<pre><code class="language-python">N = 500 # total number of data points
+μ1, μ2, μ3 = [-0.5, 0], [-1, 1], [0.25, 0.5] # cluster mean d = 2
+# cluster standard deviation
+σ1, σ2, σ3 = .05 * np.eye(2), .1 * np.eye(2), .15 * np.eye(2)
+π1, π2, π3 = 0.3, 0.4, 0.3 # mixing proportions
+# needs to be a valid categorical distribution
+assert sum([π1, π2, π3])==1
+</code></pre>
+<p>The dataset is drawn according to our model:<pre><code class="language-python">μs, σs, πs = [μ1, μ2, μ3], [σ1, σ2, σ3], [π1, π2, π3]
+X = [normal(μ, σ, (int(N*π), 2)) for μ, σ, π in zip(μs, σs, πs)]
+# Reshape to our N x d dataset
+X = np.concatenate(X, axis=0)
 
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]);</span> <span class="c"># visualize data generated</span>
-</pre></table>
-</div>
-</div>
+plt.scatter(X[:, 0], X[:, 1]); # visualize data generated
+</code></pre>
 <p>we observe the dataset at the beginning of the section (three fairly distinct clusters).
-<p>We also need to initialise guesses for our model parameters. Here we sample from a normal distribution for the cluster centres, and guess identity covariance matrix and uniform mixing proportion:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2</pre><td class="code"><pre><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">μ</span><span class="n">s</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">σ</span><span class="n">s</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="p">)</span>
-<span class="err">μ</span><span class="mi">0</span><span class="p">,</span> <span class="err">σ</span><span class="mi">0</span><span class="p">,</span> <span class="err">π</span><span class="mi">0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="err">μ</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span><span class="o">*</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
-</pre></table>
-</div>
-</div>
+<p>We also need to initialise guesses for our model parameters. Here we sample from a normal distribution for the cluster centres, and guess identity covariance matrix and uniform mixing proportion:<pre><code class="language-python">μs, σs, πs = np.array(μs), np.array(σs), np.array(πs)
+μ0, σ0, π0 = np.random.randn(*μs.shape), np.array([np.eye(2)]*3), np.ones(πs.shape)/3
+</code></pre>
 <h3 id="322-e-step">3.2.2 E-Step</h3>
 <p><strong>E</strong>-step update rule is reproduced here for convenience:
-<code class="highlighter-rouge">$$
+<code>$$
 q\left(z_{i}=c\right)=\frac{\mathcal{N}\left(x_{i} | \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}}{\sum_{k} \mathcal{N}\left(x_{i} | \mu_{k}, \sigma_{k}^{2}\right) \pi_{k}}
 $$</code>
-the corresponding code is simply:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7
-8
-9
-10</pre><td class="code"><pre><span class="k">def</span> <span class="nf">e_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span><span class="p">):</span>
-    <span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="p">)</span>
-    <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span> <span class="c"># q(z)</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span> <span class="c"># p(x|z)</span>
-    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
-        <span class="c"># density function evaluation at our data points</span>
-        <span class="n">p</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">multivariate_normal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="err">μ</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">cov</span><span class="o">=</span><span class="err">σ</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">])</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-    <span class="n">p</span> <span class="o">*=</span> <span class="err">π</span><span class="n">s</span> <span class="c"># weight by mixing proportion</span>
-    <span class="n">q</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">q</span>
-</pre></table>
-</div>
-</div>
-<p>As a sanity check, under the variational distribution, likelihood of each data point for all clusters should sum to one:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2</pre><td class="code"><pre><span class="n">q</span> <span class="o">=</span> <span class="n">e_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="err">μ</span><span class="mi">0</span><span class="p">,</span> <span class="err">σ</span><span class="mi">0</span><span class="p">,</span> <span class="err">π</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)))</span>
-</pre></table>
-</div>
-</div>
+the corresponding code is simply:<pre><code class="language-python">def e_step(X, μs, σs, πs):
+    N, d, C = *X.shape, len(πs)
+    q = np.zeros((N, C)) # q(z)
+    p = np.zeros((N, C)) # p(x|z)
+    for c in range(C):
+        # density function evaluation at our data points
+        p[:, c] = multivariate_normal(mean=μs[c], cov=σs[c]).pdf(X)
+    p *= πs # weight by mixing proportion
+    q = p / np.sum(p, axis=1, keepdims=True)
+    return q
+</code></pre>
+<p>As a sanity check, under the variational distribution, likelihood of each data point for all clusters should sum to one:<pre><code class="language-python">q = e_step(X, μ0, σ0, π0)
+assert_array_almost_equal(np.sum(q, axis=1), np.ones(len(q)))
+</code></pre>
 <h3 id="323-m-step">3.2.3 M-Step</h3>
 <p><strong>M</strong>-step update rule is copied here for all three classes of parameters:
-<code class="highlighter-rouge">$$
+<code>$$
 \mu_{k}=\frac{\sum_{i} q\left(z_{i}=k\right) x_{i}}{\sum_{i} q\left(z_{i}=k\right)}
 $$</code>
-<code class="highlighter-rouge">$$
+<code>$$
 \sigma_{k}^{2}=\frac{\sum_{i}\left(x_{i}-\mu_{k}\right)^{T}(x_{i}-\mu_{k}) q\left(z_{i}=k\right)}{\sum_{i} q\left(z_{i}=k\right)}$$</code>
-<code class="highlighter-rouge">$$\pi_{k}=\frac{\sum_{i} q\left(z_{i}=k\right)}{N}
+<code>$$\pi_{k}=\frac{\sum_{i} q\left(z_{i}=k\right)}{N}
 $$</code>
-Note we slightly modified covariance matrix update rule so it involves an outer product (realised I probably should have worked in vector form earlier, but oh well). The code becomes:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13</pre><td class="code"><pre><span class="k">def</span> <span class="nf">m_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
-    <span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
-        <span class="n">q_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">q</span><span class="p">[:,</span> <span class="n">c</span><span class="p">])</span> <span class="c"># q summed over all data points</span>
-        <span class="c"># update cluster mean</span>
-        <span class="err">μ</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">q</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">q_sum</span>
-        <span class="c"># update cluster std</span>
-        <span class="err">σ</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">([</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="err">μ</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">,:],</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="err">μ</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">,:])</span>\
-                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">q_sum</span>
-        <span class="c"># update mixing proportions</span>
-        <span class="err">π</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_sum</span> <span class="o">/</span> <span class="n">N</span>
-    <span class="k">return</span> <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span>
-</pre></table>
-</div>
-</div>
+Note we slightly modified covariance matrix update rule so it involves an outer product (realised I probably should have worked in vector form earlier, but oh well). The code becomes:<pre><code class="language-python">def m_step(X, q):
+    N, d, C = *X.shape, q.shape[1]
+    μs, σs, πs = np.zeros((C, d)), np.zeros((C, d, d)), np.zeros(C)
+    for c in range(C):
+        q_sum = np.sum(q[:, c]) # q summed over all data points
+        # update cluster mean
+        μs[c, :] = np.sum(q[:, c].reshape(N,1) * X, axis=0) / q_sum
+        # update cluster std
+        σs[c] = np.sum([q[i, c] * np.outer(X[i,:] - μs[c,:], X[i,:] - μs[c,:])\
+                        for i in range(N)], axis=0) / q_sum
+        # update mixing proportions
+        πs[c] = q_sum / N
+    return μs, σs, πs
+</code></pre>
 <h3 id="324-wrapping-up">3.2.4 Wrapping Up</h3>
 <p>In theory, we need to check for convergence by evaluation the variational lower bound. This is omitted here. Instead, we run simulation for 150 time steps and obtain:
 <center><img src="https://i.imgur.com/M7VCEve.png" alt="drawing" width="800" /></center>
