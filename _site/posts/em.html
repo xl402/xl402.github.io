@@ -338,60 +338,39 @@ $$</code>
 where <code class="highlighter-rouge">$N$</code> is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to <strong>re-estimate model parameters with our ‘self-labelled’ data points</strong> (labelled by our own variational distribution <code class="highlighter-rouge">$q$</code>). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to <strong>maximise likelihood of data points under our model</strong>.
 <h2 id="32-implementation">3.2 Implementation</h2>
 <p>Of course, any sane person would call <code class="highlighter-rouge">sklearn.mixture.GaussianMixture</code> and just do <code class="highlighter-rouge">GMM.fit(X)</code>. But that is way too efficient. We start with some standard import:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6</pre><td class="code"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># bit confusing, one is used to draw from, the other is used for evaluation</span>
 <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">multivariate_normal</span> <span class="k">as</span> <span class="n">mv_n</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">numpy.testing</span> <span class="kn">import</span> <span class="n">assert_array_almost_equal</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <h3 id="321-dataground-truth-generation">3.2.1 Data/Ground Truth Generation</h3>
 <p>First, let’s generate our dataset. Define the ground truth parameters that we wish to estimate:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7</pre><td class="code"><pre><span class="n">N</span> <span class="o">=</span> <span class="mi">500</span> <span class="c"># total number of data points</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="n">N</span> <span class="o">=</span> <span class="mi">500</span> <span class="c"># total number of data points</span>
 <span class="err">μ</span><span class="mi">1</span><span class="p">,</span> <span class="err">μ</span><span class="mi">2</span><span class="p">,</span> <span class="err">μ</span><span class="mi">3</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span> <span class="c"># cluster mean d = 2</span>
 <span class="c"># cluster standard deviation</span>
 <span class="err">σ</span><span class="mi">1</span><span class="p">,</span> <span class="err">σ</span><span class="mi">2</span><span class="p">,</span> <span class="err">σ</span><span class="mi">3</span> <span class="o">=</span> <span class="o">.</span><span class="mo">05</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="o">.</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="o">.</span><span class="mi">15</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span> <span class="c"># mixing proportions</span>
 <span class="c"># needs to be a valid categorical distribution</span>
 <span class="k">assert</span> <span class="nb">sum</span><span class="p">([</span><span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span><span class="p">])</span><span class="o">==</span><span class="mi">1</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <p>The dataset is drawn according to our model:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6</pre><td class="code"><pre><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="err">μ</span><span class="mi">1</span><span class="p">,</span> <span class="err">μ</span><span class="mi">2</span><span class="p">,</span> <span class="err">μ</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="err">σ</span><span class="mi">1</span><span class="p">,</span> <span class="err">σ</span><span class="mi">2</span><span class="p">,</span> <span class="err">σ</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span><span class="p">]</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="err">μ</span><span class="mi">1</span><span class="p">,</span> <span class="err">μ</span><span class="mi">2</span><span class="p">,</span> <span class="err">μ</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="err">σ</span><span class="mi">1</span><span class="p">,</span> <span class="err">σ</span><span class="mi">2</span><span class="p">,</span> <span class="err">σ</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="err">π</span><span class="mi">1</span><span class="p">,</span> <span class="err">π</span><span class="mi">2</span><span class="p">,</span> <span class="err">π</span><span class="mi">3</span><span class="p">]</span>
 <span class="n">X</span> <span class="o">=</span> <span class="p">[</span><span class="n">normal</span><span class="p">(</span><span class="err">μ</span><span class="p">,</span> <span class="err">σ</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="err">π</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span> <span class="k">for</span> <span class="err">μ</span><span class="p">,</span> <span class="err">σ</span><span class="p">,</span> <span class="err">π</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span><span class="p">)]</span>
 <span class="c"># Reshape to our N x d dataset</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]);</span> <span class="c"># visualize data generated</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <p>we observe the dataset at the beginning of the section (three fairly distinct clusters).
 <p>We also need to initialise guesses for our model parameters. Here we sample from a normal distribution for the cluster centres, and guess identity covariance matrix and uniform mixing proportion:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2</pre><td class="code"><pre><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">μ</span><span class="n">s</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">σ</span><span class="n">s</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">μ</span><span class="n">s</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">σ</span><span class="n">s</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="p">)</span>
 <span class="err">μ</span><span class="mi">0</span><span class="p">,</span> <span class="err">σ</span><span class="mi">0</span><span class="p">,</span> <span class="err">π</span><span class="mi">0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="err">μ</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span><span class="o">*</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <h3 id="322-e-step">3.2.2 E-Step</h3>
 <p><strong>E</strong>-step update rule is reproduced here for convenience:
@@ -399,16 +378,7 @@ where <code class="highlighter-rouge">$N$</code> is the total number of data poi
 q\left(z_{i}=c\right)=\frac{\mathcal{N}\left(x_{i} | \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}}{\sum_{k} \mathcal{N}\left(x_{i} | \mu_{k}, \sigma_{k}^{2}\right) \pi_{k}}
 $$</code>
 the corresponding code is simply:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7
-8
-9
-10</pre><td class="code"><pre><span class="k">def</span> <span class="nf">e_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span><span class="p">):</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">e_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span><span class="p">):</span>
     <span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="err">π</span><span class="n">s</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span> <span class="c"># q(z)</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span> <span class="c"># p(x|z)</span>
@@ -418,15 +388,12 @@ the corresponding code is simply:
     <span class="n">p</span> <span class="o">*=</span> <span class="err">π</span><span class="n">s</span> <span class="c"># weight by mixing proportion</span>
     <span class="n">q</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">q</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <p>As a sanity check, under the variational distribution, likelihood of each data point for all clusters should sum to one:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2</pre><td class="code"><pre><span class="n">q</span> <span class="o">=</span> <span class="n">e_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="err">μ</span><span class="mi">0</span><span class="p">,</span> <span class="err">σ</span><span class="mi">0</span><span class="p">,</span> <span class="err">π</span><span class="mi">0</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="n">q</span> <span class="o">=</span> <span class="n">e_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="err">μ</span><span class="mi">0</span><span class="p">,</span> <span class="err">σ</span><span class="mi">0</span><span class="p">,</span> <span class="err">π</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">assert_array_almost_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)))</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <h3 id="323-m-step">3.2.3 M-Step</h3>
 <p><strong>M</strong>-step update rule is copied here for all three classes of parameters:
@@ -438,19 +405,7 @@ $$</code>
 <code class="highlighter-rouge">$$\pi_{k}=\frac{\sum_{i} q\left(z_{i}=k\right)}{N}
 $$</code>
 Note we slightly modified covariance matrix update rule so it involves an outer product (realised I probably should have worked in vector form earlier, but oh well). The code becomes:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13</pre><td class="code"><pre><span class="k">def</span> <span class="nf">m_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<div class="language-python highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">m_step</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
     <span class="n">N</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="o">*</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
@@ -463,8 +418,7 @@ Note we slightly modified covariance matrix update rule so it involves an outer 
         <span class="c"># update mixing proportions</span>
         <span class="err">π</span><span class="n">s</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_sum</span> <span class="o">/</span> <span class="n">N</span>
     <span class="k">return</span> <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span>
-</pre></table>
-</div>
+</code></pre>
 </div>
 <h3 id="324-wrapping-up">3.2.4 Wrapping Up</h3>
 <p>In theory, we need to check for convergence by evaluation the variational lower bound. This is omitted here. Instead, we run simulation for 150 time steps and obtain:
