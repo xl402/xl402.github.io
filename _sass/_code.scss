@@ -11,7 +11,7 @@ pre {
 // small code thingies
 code {
   padding: .25em .5em;
-  font-size: .85em;
+  font-size: 0.9em;
   // Could be mistaken for a link if the user choses a similar link-color, so better no colored inline code.
   // color: $code-color;
   background-color: var(--code-bg-color);
@@ -25,7 +25,7 @@ code.highlighter-rouge {
 // here is where i deleted
 pre code {
   padding: 0;
-  font-size: .75em;
+  font-size: 0.9em;
   color: inherit;
   background-color: transparent;
 }
@@ -55,7 +55,7 @@ figure, .figure {
 // Rouge
 .highlight {
   margin-bottom: 1.5rem;
-  font-size: .75em;
+  font-size: 0.9em;
   // /* Prevent code linebreaks and allow side-scrolling (much better readability on mobile) */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
