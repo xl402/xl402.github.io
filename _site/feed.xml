@@ -6,13 +6,13 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 13 Jun 2020 21:47:06 +0100</pubDate>
-    <lastBuildDate>Sat, 13 Jun 2020 21:47:06 +0100</lastBuildDate>
+    <pubDate>Sat, 13 Jun 2020 21:55:44 +0100</pubDate>
+    <lastBuildDate>Sat, 13 Jun 2020 21:55:44 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
         <title>Expectation Maximisation Deep Dive</title>
-        <description>&lt;p class=&quot;lead&quot;&gt;(&lt;code&gt;$\approx$&lt;/code&gt; 30min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.&lt;/p&gt;
+        <description>&lt;p class=&quot;lead&quot;&gt;(&lt;code class=&quot;highlighter-rouge&quot;&gt;$\approx$&lt;/code&gt; 30min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
@@ -29,49 +29,49 @@
 &lt;center&gt;&lt;img src=&quot;https://i.imgur.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
-&lt;p&gt;where &lt;code&gt;$x_i$&lt;/code&gt; is our data-points in the dataset &lt;code&gt;$X = \{x_0, \cdots x_N\}$&lt;/code&gt; and &lt;code&gt;$z_i$&lt;/code&gt; is the latent variables associated with each datapoint. The edge represents that &lt;code&gt;$x_i$&lt;/code&gt; is conditioned by &lt;code&gt;$z_i$&lt;/code&gt;. Albeit this graphical model looks simple, to fully specify the model, we need to:&lt;/p&gt;
+&lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; is our data-points in the dataset &lt;code class=&quot;highlighter-rouge&quot;&gt;$X = \{x_0, \cdots x_N\}$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; is the latent variables associated with each datapoint. The edge represents that &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; is conditioned by &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt;. Albeit this graphical model looks simple, to fully specify the model, we need to:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;Specify prior distribution of &lt;code&gt;$z_i$&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Specify the conditional distribution &lt;code&gt;$p(x_i|z_i)$&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Specify prior distribution of &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Specify the conditional distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(x_i|z_i)$&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;both these two distributions can be arbitrarily complex (which is a problem during both model fitting and inference). If we &lt;strong&gt;summarise&lt;/strong&gt; all the model parameters associated with our problem to be &lt;code&gt;$\theta$&lt;/code&gt;, our goal becomes finding a set of parameters &lt;code&gt;$\theta$&lt;/code&gt; which &lt;strong&gt;maximises the likelihood&lt;/strong&gt; of our dataset &lt;code&gt;$X$&lt;/code&gt; given our model:
-&lt;code&gt;$$
+&lt;p&gt;both these two distributions can be arbitrarily complex (which is a problem during both model fitting and inference). If we &lt;strong&gt;summarise&lt;/strong&gt; all the model parameters associated with our problem to be &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, our goal becomes finding a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which &lt;strong&gt;maximises the likelihood&lt;/strong&gt; of our dataset &lt;code class=&quot;highlighter-rouge&quot;&gt;$X$&lt;/code&gt; given our model:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \max_{\theta}p(X|\theta)
 $$&lt;/code&gt;
 We assume our datapoints are &lt;em&gt;i.i.d&lt;/em&gt; under our model, therefore:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \max_{\theta}p(X|\theta) = \max_\theta \prod p(x_i|\theta)
 $$&lt;/code&gt;
 simplifying the product terms with a sum by maximising the log-likelihood:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \max_{\theta}\log p(X|\theta) = \max_\theta \sum_i \log p(x_i|\theta)
 $$&lt;/code&gt;
 now we explicitly add in the conditional distribution using the rule of marginalisation:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \max_{\theta}\sum_i \log\left(\sum_c p(x_i, z_i=c|\theta)\right)
 $$&lt;/code&gt;
-where for simplicity, we assume &lt;strong&gt;discrete distribution&lt;/strong&gt; for &lt;code&gt;$z_i$&lt;/code&gt; (derivation holds if you replace the sum with an integral). The support for &lt;code&gt;$z_i$&lt;/code&gt; is &lt;code&gt;$[0, 1, \cdots, c]$&lt;/code&gt;, i.e. it is categorical.&lt;/p&gt;
+where for simplicity, we assume &lt;strong&gt;discrete distribution&lt;/strong&gt; for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; (derivation holds if you replace the sum with an integral). The support for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; is &lt;code class=&quot;highlighter-rouge&quot;&gt;$[0, 1, \cdots, c]$&lt;/code&gt;, i.e. it is categorical.&lt;/p&gt;
 
-&lt;p&gt;That’s it! EM tries to find &lt;code&gt;$\theta$&lt;/code&gt; that maximises the likelihood of our data, and through some maths we have shown:&lt;/p&gt;
+&lt;p&gt;That’s it! EM tries to find &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; that maximises the likelihood of our data, and through some maths we have shown:&lt;/p&gt;
 
-&lt;p class=&quot;notice&quot;&gt;&lt;code&gt;$$
+&lt;p class=&quot;notice&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \max _{\theta} p(X | \theta) = \max _{\theta} \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)
 $$&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;Of course, one question is why can’t we directly differentiate the (log) likelihood? As we will see later with GMM, we cannot obtain an analytical equation for &lt;code&gt;$\theta$&lt;/code&gt; via direct differentiation!&lt;/p&gt;
+&lt;p&gt;Of course, one question is why can’t we directly differentiate the (log) likelihood? As we will see later with GMM, we cannot obtain an analytical equation for &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; via direct differentiation!&lt;/p&gt;
 
 &lt;h2 id=&quot;22-graphical-representation-of-the-solution&quot;&gt;2.2 Graphical representation of the solution&lt;/h2&gt;
 
 &lt;p&gt;Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.&lt;/p&gt;
 
-&lt;p&gt;We wish to find a set of parameters &lt;code&gt;$\theta$&lt;/code&gt; which maximises the likelihood &lt;code&gt;$\log(p(X|\theta))$&lt;/code&gt;. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a &lt;em&gt;lower bound&lt;/em&gt; &lt;code&gt;$\mathcal{L}(q, \theta)$&lt;/code&gt;, which is &lt;strong&gt;below the likelihood&lt;/strong&gt; at all &lt;code&gt;$\theta$&lt;/code&gt; values. At timestep &lt;code&gt;$k$&lt;/code&gt;, the EM update rule are as follows:&lt;/p&gt;
+&lt;p&gt;We wish to find a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which maximises the likelihood &lt;code class=&quot;highlighter-rouge&quot;&gt;$\log(p(X|\theta))$&lt;/code&gt;. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a &lt;em&gt;lower bound&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{L}(q, \theta)$&lt;/code&gt;, which is &lt;strong&gt;below the likelihood&lt;/strong&gt; at all &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; values. At timestep &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt;, the EM update rule are as follows:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: fix &lt;code&gt;$\theta$&lt;/code&gt;, find some arbitrary &lt;em&gt;variational distribution&lt;/em&gt; &lt;code&gt;$q(z_i)$&lt;/code&gt; which maximises the lower-bound, i.e. &lt;code&gt;$q^{k+1} = \arg\max_{q}\mathcal{L}(\theta^k, q)$&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: fix &lt;code&gt;$q$&lt;/code&gt;, find model parameters &lt;code&gt;$\theta$&lt;/code&gt; that maximises our current lower-bound, i.e. &lt;code&gt;$\theta^{k+1} = \arg\max_\theta \mathcal{L}(\theta, q^{k+1})$&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: fix &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, find some arbitrary &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; which maximises the lower-bound, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^{k+1} = \arg\max_{q}\mathcal{L}(\theta^k, q)$&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: fix &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, find model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; that maximises our current lower-bound, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^{k+1} = \arg\max_\theta \mathcal{L}(\theta, q^{k+1})$&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;One thing to get our head around is that in &lt;strong&gt;E&lt;/strong&gt;-step, we are essentially taking derivative w.r.t. a &lt;strong&gt;function&lt;/strong&gt; &lt;code&gt;$q(z_i)$&lt;/code&gt;. These two steps can be seen more clearly in the picture below.&lt;/p&gt;
+&lt;p&gt;One thing to get our head around is that in &lt;strong&gt;E&lt;/strong&gt;-step, we are essentially taking derivative w.r.t. a &lt;strong&gt;function&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;. These two steps can be seen more clearly in the picture below.&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;
 &lt;center&gt;&lt;img src=&quot;https://i.imgur.com/8egXBCs.gif&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
@@ -80,96 +80,96 @@ $$&lt;/code&gt;&lt;/p&gt;
 
 &lt;div class=&quot;notice&quot;&gt;
   &lt;ul&gt;
-    &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: set &lt;em&gt;variational distribution&lt;/em&gt; &lt;code&gt;$q(z_i)$&lt;/code&gt; to be equal (or approximately equal) to the posterior distribution, i.e. &lt;code&gt;$q^k(z_i) = p(z_i|\theta_i^k, x_i)$&lt;/code&gt; where &lt;code&gt;$k$&lt;/code&gt; denotes the timestep in our iteration.&lt;/li&gt;
-    &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: under our distribution &lt;code&gt;$q(z_i)$&lt;/code&gt;, find a set of parameters &lt;code&gt;$\theta$&lt;/code&gt; which maximises the data likelihood, i.e. &lt;code&gt;$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;E&lt;/strong&gt;-step: set &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; to be equal (or approximately equal) to the posterior distribution, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^k(z_i) = p(z_i|\theta_i^k, x_i)$&lt;/code&gt; where &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt; denotes the timestep in our iteration.&lt;/li&gt;
+    &lt;li&gt;&lt;strong&gt;M&lt;/strong&gt;-step: under our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;, find a set of parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; which maximises the data likelihood, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^{k} = \arg\max_\theta \sum_i \mathbb{E}_{z_i\sim q^k}\left[\log p(x_i, z_i | \theta)\right]$&lt;/code&gt;&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/div&gt;
 &lt;p&gt;&lt;/p&gt;
 
-&lt;p&gt;Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own &lt;strong&gt;variational distribution&lt;/strong&gt; which is a simple function. At each timestep, we approximate or set this function to the posterior distribution &lt;code&gt;$p(Z|X,\theta)$&lt;/code&gt; (&lt;strong&gt;E&lt;/strong&gt;-step), and we maximises the likelihood of our data-points under this function instead (&lt;strong&gt;M&lt;/strong&gt;-step). Alternating these two procedures, we are guaranteed to reach a &lt;strong&gt;local optima&lt;/strong&gt; (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).&lt;/p&gt;
+&lt;p&gt;Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own &lt;strong&gt;variational distribution&lt;/strong&gt; which is a simple function. At each timestep, we approximate or set this function to the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(Z|X,\theta)$&lt;/code&gt; (&lt;strong&gt;E&lt;/strong&gt;-step), and we maximises the likelihood of our data-points under this function instead (&lt;strong&gt;M&lt;/strong&gt;-step). Alternating these two procedures, we are guaranteed to reach a &lt;strong&gt;local optima&lt;/strong&gt; (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).&lt;/p&gt;
 
 &lt;h2 id=&quot;23-detailed-derivation&quot;&gt;2.3 Detailed Derivation&lt;/h2&gt;
 &lt;h3 id=&quot;e-step&quot;&gt;E-Step&lt;/h3&gt;
 
-&lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code&gt;$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$&lt;/code&gt;, to minimise the gap between our lower-bound and the likelihood under current parameters &lt;code&gt;$\theta$&lt;/code&gt;, set our variational distribution to be the posterior.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Proof&lt;/strong&gt;: first, lets define how exactly a lower-bound arises and where on earth this &lt;strong&gt;variational distribution&lt;/strong&gt; &lt;code&gt;$q$&lt;/code&gt; comes from. Decompose the likelihood:
-&lt;code&gt;$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$&lt;/code&gt;
-Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice &lt;code&gt;$q$&lt;/code&gt; (coz why not?):
-&lt;code&gt;$$\log p(X | \theta) = \sum_{i} \log\left( \sum_{c} q\left(z_{i}=c\right) \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)$$&lt;/code&gt;
+&lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$&lt;/code&gt;, to minimise the gap between our lower-bound and the likelihood under current parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, set our variational distribution to be the posterior.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Proof&lt;/strong&gt;: first, lets define how exactly a lower-bound arises and where on earth this &lt;strong&gt;variational distribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; comes from. Decompose the likelihood:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X | \theta) = \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)$$&lt;/code&gt;
+Idea here is we cannot directly maximise this equation (if you can, then do not use EM ;)), instead, we multiply top and bottom by a distribution of our choice &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; (coz why not?):
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X | \theta) = \sum_{i} \log\left( \sum_{c} q\left(z_{i}=c\right) \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)$$&lt;/code&gt;
 which is equivalent to:
-&lt;code&gt;$$\log p(X|\theta) = \sum_{i} \log \mathbb{E}_{z_{i} \sim q} \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}$$&lt;/code&gt;
-now we can utilise Jensen’s inequality to obtain a lower bound for this equality. As a reminder, for any concave function (such as &lt;code&gt;$\log(x)$&lt;/code&gt; in our case), &lt;code&gt;$f (\mathbb{E}[x]) \geqslant \mathbb{E}[f (x)]$&lt;/code&gt;. We can therefore write the equation above as:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log p(X|\theta) = \sum_{i} \log \mathbb{E}_{z_{i} \sim q} \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}$$&lt;/code&gt;
+now we can utilise Jensen’s inequality to obtain a lower bound for this equality. As a reminder, for any concave function (such as &lt;code class=&quot;highlighter-rouge&quot;&gt;$\log(x)$&lt;/code&gt; in our case), &lt;code class=&quot;highlighter-rouge&quot;&gt;$f (\mathbb{E}[x]) \geqslant \mathbb{E}[f (x)]$&lt;/code&gt;. We can therefore write the equation above as:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \log p(X|\theta)\geq \sum_{i} \mathbb{E}_{z_{i}\sim q} \log \frac{p\left(x_{i}, z_{i} | \theta\right)}{q\left(z_{i}\right)}
 $$&lt;/code&gt;
 expanding the expectation out:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \log p(X|\theta)\geq\sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)} = \mathcal{L}(\theta, q)
 $$&lt;/code&gt;
-Our objective has the become &lt;strong&gt;minimising the gap&lt;/strong&gt; between this lower-bound by optimising our arbitrary distribution &lt;code&gt;$q$&lt;/code&gt;:
-&lt;code&gt;$$
+Our objective has the become &lt;strong&gt;minimising the gap&lt;/strong&gt; between this lower-bound by optimising our arbitrary distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg\min_q \text{Objective} = \arg\min_q \left( \log p(X|\theta) - \mathcal{L}(\theta, q)\right)
 $$&lt;/code&gt;
 more maths:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \text{Objective} = \sum_{i} \log p\left(x_{i} | \theta\right) - \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
 $$&lt;/code&gt;
-for the first term, we multiply it with &lt;code&gt;$1 = \sum_c q(z_i=c)$&lt;/code&gt;:
-&lt;code&gt;$$
+for the first term, we multiply it with &lt;code class=&quot;highlighter-rouge&quot;&gt;$1 = \sum_c q(z_i=c)$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
  =\sum_{i} \left(\log p\left(x_{i} | \theta\right)\sum_{c} q\left(z_{i}=c\right)\right) - \sum_{i} \sum_{c} \cdots
 $$&lt;/code&gt;
 now we can move both summations out:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 =\sum_{i}\sum_{c}\left(\log p\left(x_{i} | \theta\right) q\left(z_{i}=c\right) - q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)} \right)
 $$&lt;/code&gt;
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
  =\sum_{i} \sum_{c} \left(q\left(z_{i}=c\right) \left(\log p\left(x_{i} | \theta\right) - \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}\right)\right)
 $$&lt;/code&gt;
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 =\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\left(\log \left(\frac{p\left(x_{i} | \theta\right) q\left(z_{i}=c\right)}{p\left(x_{i}, z_{i}=c | \theta\right)}\right)\right)\right)
 $$&lt;/code&gt;
 re-write the joint distribution of the denominator inside the log:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 =\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\left(\log \left(\frac{p\left(x_{i} | \theta\right) q\left(z_{i}=c\right)}{p(x_i|\theta)p(z_i=c|\theta, x_i)}\right)\right)\right)
 $$&lt;/code&gt;
-cancelling out the &lt;code&gt;$p\left(x_{i} | \theta\right)$&lt;/code&gt; we obtain:
-&lt;code&gt;$$
+cancelling out the &lt;code class=&quot;highlighter-rouge&quot;&gt;$p\left(x_{i} | \theta\right)$&lt;/code&gt; we obtain:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 =\sum_{i} \sum_{c}\left(q\left(z_{i}=c\right)\log \left(\frac{ q\left(z_{i}=c\right)}{ p\left(z_{i}=c | \theta, x_{i}\right)}\right)\right)
 $$&lt;/code&gt;
-observe that the summation under &lt;code&gt;$c$&lt;/code&gt; term corresponds to the KL divergence between &lt;code&gt;$q$&lt;/code&gt; and &lt;code&gt;$p$&lt;/code&gt;, we therefore obtain:
-&lt;code&gt;$$
+observe that the summation under &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt; term corresponds to the KL divergence between &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$p$&lt;/code&gt;, we therefore obtain:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \text{Objective} = \text{KL}(q(z_i)|| p(z_i|\theta, x_i))
 $$&lt;/code&gt;
 after all this faff, we see to minimise the gap (objective) between the likelihood and our lower-bound is equivalent to:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg \min _{q}(\log p(X | \theta)-\mathcal{L}(\theta, q)) = \arg \min _{q}\mathrm{KL}\left(q\left(z_{i}\right) \| p\left(z_{i} | \theta, x_{i}\right)\right)
 $$&lt;/code&gt;
-so effectively, &lt;strong&gt;E&lt;/strong&gt;-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution &lt;code&gt;$q$&lt;/code&gt; w.r.t. model posterior &lt;code&gt;$p\left(z_{i} | \theta, x_{i}\right)$&lt;/code&gt;. There is &lt;strong&gt;no guarantee&lt;/strong&gt; that the posterior has a closed-form representation. This is where the rich literature of &lt;strong&gt;variational inference&lt;/strong&gt; comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set &lt;code&gt;$q$&lt;/code&gt; to be equal to the posterior.&lt;/p&gt;
+so effectively, &lt;strong&gt;E&lt;/strong&gt;-step becomes an optimisation problem with the objective function being the KL divergence between variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; w.r.t. model posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p\left(z_{i} | \theta, x_{i}\right)$&lt;/code&gt;. There is &lt;strong&gt;no guarantee&lt;/strong&gt; that the posterior has a closed-form representation. This is where the rich literature of &lt;strong&gt;variational inference&lt;/strong&gt; comes in. Fortunately, with a GMM (Gaussian mixture model), the posterior has a closed form solution! Hence at each iteration, we are able to set &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; to be equal to the posterior.&lt;/p&gt;
 
 &lt;h3 id=&quot;m-step&quot;&gt;M-Step&lt;/h3&gt;
 
-&lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt; given a fixed variational distribution &lt;code&gt;$q$&lt;/code&gt;, maximise the data and latent variable’s joint likelihood w.r.t. model parameters &lt;code&gt;$\theta$&lt;/code&gt;, i.e. &lt;code&gt;$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$&lt;/code&gt; where latent variables &lt;strong&gt;come from our variational ditribution&lt;/strong&gt; &lt;code&gt;$q$&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Recall from &lt;strong&gt;E&lt;/strong&gt;-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. &lt;code&gt;$\theta$&lt;/code&gt;, the only difference is &lt;strong&gt;we can easily perform this maximisation&lt;/strong&gt; since we know our distribution &lt;code&gt;$q$&lt;/code&gt; (normally it is a Gaussian distribution). Writing the whole expectation term out:
-&lt;code&gt;$$
+&lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt; given a fixed variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, maximise the data and latent variable’s joint likelihood w.r.t. model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\arg\max_\theta \mathcal{L}(\theta, q) = \arg \max _{\theta} \mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]$&lt;/code&gt; where latent variables &lt;strong&gt;come from our variational ditribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Recall from &lt;strong&gt;E&lt;/strong&gt;-step, maximising the lower-bound is essentially maximising the likelihood w.r.t. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, the only difference is &lt;strong&gt;we can easily perform this maximisation&lt;/strong&gt; since we know our distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; (normally it is a Gaussian distribution). Writing the whole expectation term out:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg\max_\theta \mathcal{L}(\theta, q) = \arg\max_\theta \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log \frac{p\left(x_{i}, z_{i}=c | \theta\right)}{q\left(z_{i}=c\right)}
 $$&lt;/code&gt;
 splitting the terms within the log:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \left(\log p\left(x_{i}, z_{i}=c | \theta\right) - \log q\left(z_{i}=c\right)\right)
 $$&lt;/code&gt;
-the last term is independent of &lt;code&gt;$\theta$&lt;/code&gt;:
-&lt;code&gt;$$
+the last term is independent of &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right)\log p\left(x_{i}, z_{i}=c | \theta\right) + \text{const}.
 $$&lt;/code&gt;
-condensing the sum over &lt;code&gt;$c$&lt;/code&gt; into expectation, dropping the constant:
-&lt;code&gt;$$
+condensing the sum over &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt; into expectation, dropping the constant:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \arg \max _{\theta}\sum_{i}\mathbb{E}_{z_i}\left[ \log p(x_i,z_i=c|\theta)\right] = \mathbb{E}_{Z\sim q}\left[ \log p(X,Z|\theta)\right]
 $$&lt;/code&gt;
-So the &lt;strong&gt;M&lt;/strong&gt;-step is simply maximising the joint distribution between collection of latent variables &lt;code&gt;$Z$&lt;/code&gt; and data points &lt;code&gt;$X$&lt;/code&gt; &lt;strong&gt;under the variational distribution&lt;/strong&gt; &lt;code&gt;$q$&lt;/code&gt;:
-&lt;code&gt;$$
+So the &lt;strong&gt;M&lt;/strong&gt;-step is simply maximising the joint distribution between collection of latent variables &lt;code class=&quot;highlighter-rouge&quot;&gt;$Z$&lt;/code&gt; and data points &lt;code class=&quot;highlighter-rouge&quot;&gt;$X$&lt;/code&gt; &lt;strong&gt;under the variational distribution&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \hat{\theta} = \arg \max _{\theta}\mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]
 $$&lt;/code&gt;
-Again, we definitely know what &lt;code&gt;$p(X, Z | \theta)$&lt;/code&gt; is, since we needed it to set up our graphical model. However, maximisation w.r.t. &lt;code&gt;$\theta$&lt;/code&gt; can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters &lt;code&gt;$\theta$&lt;/code&gt;.&lt;/p&gt;
+Again, we definitely know what &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X, Z | \theta)$&lt;/code&gt; is, since we needed it to set up our graphical model. However, maximisation w.r.t. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;.&lt;/p&gt;
 
 &lt;h1 id=&quot;3-em-in-practice-gaussian-mixture-model&quot;&gt;3. EM in Practice: Gaussian Mixture Model&lt;/h1&gt;
 
@@ -187,155 +187,200 @@ Again, we definitely know what &lt;code&gt;$p(X, Z | \theta)$&lt;/code&gt; is, s
 
 &lt;p&gt;Left figure above is the data points that you have obtained, through some prior knowledge or by inspecting the plots, &lt;strong&gt;you believe&lt;/strong&gt; that the data points come from &lt;strong&gt;three Gaussian distributions&lt;/strong&gt;, and you wish to fit the Gaussian centres and variances to the data points (shown on the right).&lt;/p&gt;
 
-&lt;p&gt;To apply latent variable modelling, we think about “how do we &lt;strong&gt;generate&lt;/strong&gt; these data points with a probabilistic model?”. Let &lt;code&gt;$z_i$&lt;/code&gt; follow a categorical distribution (three categories) which define the proportion of data points that belong to each cluster. When &lt;strong&gt;conditioned&lt;/strong&gt; on the categories, the data point &lt;code&gt;$x_i$&lt;/code&gt; follows a gaussian distribution. Model parameters are therefore &lt;code&gt;$\theta = [\pi_1, \cdots, \pi_c, \mu_1, \cdots, \mu_c, \sigma^2_1, \cdots \sigma^2_c]$&lt;/code&gt;, which are the distribution over categories, mean and standard deviaiton of each cluster centre. We restrict ourselves to fitting &lt;strong&gt;isotropic&lt;/strong&gt; Gaussians, although in practice, you can find the MLE covariance matrix (maths will of course be more disgusting).&lt;/p&gt;
+&lt;p&gt;To apply latent variable modelling, we think about “how do we &lt;strong&gt;generate&lt;/strong&gt; these data points with a probabilistic model?”. Let &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; follow a categorical distribution (three categories) which define the proportion of data points that belong to each cluster. When &lt;strong&gt;conditioned&lt;/strong&gt; on the categories, the data point &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; follows a gaussian distribution. Model parameters are therefore &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta = [\pi_1, \cdots, \pi_c, \mu_1, \cdots, \mu_c, \sigma^2_1, \cdots \sigma^2_c]$&lt;/code&gt;, which are the distribution over categories, mean and standard deviaiton of each cluster centre. We restrict ourselves to fitting &lt;strong&gt;isotropic&lt;/strong&gt; Gaussians, although in practice, you can find the MLE covariance matrix (maths will of course be more disgusting).&lt;/p&gt;
 &lt;center&gt;&lt;img src=&quot;https://i.imgur.com/1Mb2T0E.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
 
 &lt;p&gt;Given this mode, we can write down the &lt;strong&gt;likelihood of our data points&lt;/strong&gt; under the model:&lt;/p&gt;
 
-&lt;p&gt;&lt;code&gt;$$
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 p(x_i |\theta) = \sum_c p(x_i|z_i=c, \theta)p(z_i=c|\theta) = \sum_c p(x_i|z_i=c, \theta) \pi_c
 $$&lt;/code&gt;
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 p(X |\theta) = \prod_i \sum_c p(x_i|z_i=c, \theta) \pi_c= \prod_i \sum_c \mathcal{N}(x_i;\mu_c, \sigma^2_c) \pi_c
 $$&lt;/code&gt;
 This completes our model definition for a GMM. &lt;strong&gt;Why don’t we directly maximise the likelihood w.r.t. model parameters?&lt;/strong&gt; Let’s see:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \log p(X |\theta) = \sum_i \log \sum_{c} \mathcal{N}\left(x_{i} ; \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}
 $$&lt;/code&gt;
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \nabla_\theta \log p(X|\theta) = \sum_i  \nabla_\theta \log\left( \sum_{c} \mathcal{N}\left(x_{i} ; \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}\right)
 $$&lt;/code&gt;
 And we are stuck… good luck dealing with the log of sum of exponential term above. This is why EM is used to solve GMMs.&lt;/p&gt;
 
 &lt;h3 id=&quot;e-step-1&quot;&gt;E-Step&lt;/h3&gt;
 
-&lt;p&gt;Recall in EM, the &lt;strong&gt;E&lt;/strong&gt;-step is equivalent to setting our variational distribution &lt;code&gt;$q(z_i)$&lt;/code&gt; to be equal or approximately equal to the posterior &lt;code&gt;$p(z_i|x_i,\theta)$&lt;/code&gt;. In the case of GMM we can obtain the analytical posterior. Applying Bayes’ rule:
-&lt;code&gt;$$
+&lt;p&gt;Recall in EM, the &lt;strong&gt;E&lt;/strong&gt;-step is equivalent to setting our variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; to be equal or approximately equal to the posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(z_i|x_i,\theta)$&lt;/code&gt;. In the case of GMM we can obtain the analytical posterior. Applying Bayes’ rule:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 q(z_i=c) = p(z_i=c|x_i,\theta) = \dfrac{p(x_i|z_i=c,\theta)p(z_i=c|\theta)}{\sum_k p(x_i|z_i=k,\theta)p(z_i=k|\theta)}
 $$&lt;/code&gt;
-Don’t be confused by the index &lt;code&gt;$k$&lt;/code&gt; in the denominator, we are just marginalising over all cluster centre categories (in our example, 1 to 3). In &lt;strong&gt;E-step&lt;/strong&gt; we &lt;strong&gt;fix&lt;/strong&gt; all model parameters, the posterior above therefore takes the form:
-&lt;code&gt;$$
+Don’t be confused by the index &lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt; in the denominator, we are just marginalising over all cluster centre categories (in our example, 1 to 3). In &lt;strong&gt;E-step&lt;/strong&gt; we &lt;strong&gt;fix&lt;/strong&gt; all model parameters, the posterior above therefore takes the form:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 q(z_i=c) = \dfrac{\mathcal{N}(x_i|\mu_c,\sigma^2_c)\pi_c}{\sum_k \mathcal{N}(x_i|\mu_k,\sigma^2_k)\pi_k}
 $$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p class=&quot;notice&quot;&gt;This result is fairly intuitive -
-you are effectively asking: what is the chance of this data point belonging to cluster &lt;code&gt;$c$&lt;/code&gt;, given the current cluster centres and deviations.&lt;/p&gt;
-&lt;p&gt;For each data point, we do a soft (probabilistic) assignment on which cluster it comes from. Which turns out to be the probability of it &lt;strong&gt;being generated&lt;/strong&gt; by cluster &lt;code&gt;$c$&lt;/code&gt; (numerator), divided by the sum of probabilities of it being generated by all clusters (denominator).&lt;/p&gt;
+you are effectively asking: what is the chance of this data point belonging to cluster &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt;, given the current cluster centres and deviations.&lt;/p&gt;
+&lt;p&gt;For each data point, we do a soft (probabilistic) assignment on which cluster it comes from. Which turns out to be the probability of it &lt;strong&gt;being generated&lt;/strong&gt; by cluster &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt; (numerator), divided by the sum of probabilities of it being generated by all clusters (denominator).&lt;/p&gt;
 
 &lt;h3 id=&quot;m-step-1&quot;&gt;M-Step&lt;/h3&gt;
 
-&lt;p&gt;Recall in &lt;strong&gt;M&lt;/strong&gt;-step, we maximise the joint probability distribution under our own variational distribution &lt;code&gt;$q(z_i)$&lt;/code&gt;. I will just copy-paste from the previous section:
-&lt;code&gt;$$
+&lt;p&gt;Recall in &lt;strong&gt;M&lt;/strong&gt;-step, we maximise the joint probability distribution under our own variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;. I will just copy-paste from the previous section:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \theta^* = \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log p\left(x_{i}, z_{i}=c | \theta\right) = \arg\max_\theta \mathcal{G}
 $$&lt;/code&gt;
-where &lt;code&gt;$\mathcal{G}$&lt;/code&gt; is just a short hand for the joint density, and $\theta$ are the mixture proportion &lt;code&gt;$\pi_c$&lt;/code&gt; terms, the Gaussian centres &lt;code&gt;$\mu_c$&lt;/code&gt; and &lt;code&gt;$\sigma^2_c$&lt;/code&gt; terms.&lt;/p&gt;
+where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{G}$&lt;/code&gt; is just a short hand for the joint density, and $\theta$ are the mixture proportion &lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi_c$&lt;/code&gt; terms, the Gaussian centres &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_c$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^2_c$&lt;/code&gt; terms.&lt;/p&gt;
 
-&lt;p&gt;Note that here, &lt;code&gt;$q(z_i)$&lt;/code&gt; is fixed, even though from the &lt;strong&gt;E&lt;/strong&gt;-step they depend on our parameters. Writing &lt;code&gt;$\mathcal{G}$&lt;/code&gt; out fully:&lt;/p&gt;
+&lt;p&gt;Note that here, &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; is fixed, even though from the &lt;strong&gt;E&lt;/strong&gt;-step they depend on our parameters. Writing &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{G}$&lt;/code&gt; out fully:&lt;/p&gt;
 
-&lt;p&gt;&lt;code&gt;$$
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \mathcal{G} = \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log\left(\dfrac{1}{\sigma_c \sqrt{2\pi}}\exp\left(\dfrac{-(x_i-\mu_c)^2}{2\sigma_c^2}\right)\pi_c\right)
 $$&lt;/code&gt;
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 = \sum_{i} \sum_{c} q\left(z_{i}=c\right)  \left(\log \dfrac{\pi_c}{\sigma_c\sqrt{2\pi}} - \dfrac{(x_i-\mu_c)^2}{2\sigma_c^2}\right)
 $$&lt;/code&gt;
-This is all we need to obtain the analytical gradient with respect to model parameters &lt;code&gt;$\theta$&lt;/code&gt;. For example, to get &lt;code&gt;$\mu_k$&lt;/code&gt; (&lt;code&gt;$k$&lt;/code&gt;th cluster mean):
-&lt;code&gt;$$
+This is all we need to obtain the analytical gradient with respect to model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;. For example, to get &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_k$&lt;/code&gt; (&lt;code class=&quot;highlighter-rouge&quot;&gt;$k$&lt;/code&gt;th cluster mean):
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \nabla_{\mu_k}\mathcal{G} = \sum_i q(z_i=k) \dfrac{x_i-\mu_k}{\sigma_c^2}
 $$&lt;/code&gt;
-since for all &lt;code&gt;$c\neq k$&lt;/code&gt; the gradient is zero. Setting above to zero (solve for optimum &lt;code&gt;$\mu_k$&lt;/code&gt;):
-&lt;code&gt;$$
+since for all &lt;code class=&quot;highlighter-rouge&quot;&gt;$c\neq k$&lt;/code&gt; the gradient is zero. Setting above to zero (solve for optimum &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_k$&lt;/code&gt;):
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \mu_k = \dfrac{\sum_i q(z_i=k)x_i}{\sum_i q(z_i=k)}
 $$&lt;/code&gt;
 The same can be done to $\sigma_k^2$ (via high school calculus) to obtain:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \sigma_k^2 =\frac{\sum_{i}\left(x_{i}-\mu_{k}\right)^{2} q\left(z_{i}=k\right)}{\sum_{i} q\left(z_{i}=k\right)}
 $$&lt;/code&gt;
-To get optimum mixing proportions &lt;code&gt;$\pi_k$&lt;/code&gt; is more complicated, since we need to do &lt;strong&gt;constrained optimisation&lt;/strong&gt; with &lt;code&gt;$\pi_k \geq 0$&lt;/code&gt; and &lt;code&gt;$\sum_c \pi_c=1$&lt;/code&gt; since it needs to be a probability distribution. This can be done through &lt;a href=&quot;https://www.youtube.com/watch?v=yuqB-d5MjZA&quot;&gt;Lagrange multipliers&lt;/a&gt;. Here we actually omit the maths and jump straight into the result:
-&lt;code&gt;$$
+To get optimum mixing proportions &lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi_k$&lt;/code&gt; is more complicated, since we need to do &lt;strong&gt;constrained optimisation&lt;/strong&gt; with &lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi_k \geq 0$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sum_c \pi_c=1$&lt;/code&gt; since it needs to be a probability distribution. This can be done through &lt;a href=&quot;https://www.youtube.com/watch?v=yuqB-d5MjZA&quot;&gt;Lagrange multipliers&lt;/a&gt;. Here we actually omit the maths and jump straight into the result:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \pi_k = \dfrac{\sum_i q(z_i=k)}{N}
 $$&lt;/code&gt;
-where &lt;code&gt;$N$&lt;/code&gt; is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to &lt;strong&gt;re-estimate model parameters with our ‘self-labelled’ data points&lt;/strong&gt; (labelled by our own variational distribution &lt;code&gt;$q$&lt;/code&gt;). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to &lt;strong&gt;maximise likelihood of data points under our model&lt;/strong&gt;.&lt;/p&gt;
+where &lt;code class=&quot;highlighter-rouge&quot;&gt;$N$&lt;/code&gt; is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to &lt;strong&gt;re-estimate model parameters with our ‘self-labelled’ data points&lt;/strong&gt; (labelled by our own variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to &lt;strong&gt;maximise likelihood of data points under our model&lt;/strong&gt;.&lt;/p&gt;
 &lt;h2 id=&quot;32-implementation&quot;&gt;3.2 Implementation&lt;/h2&gt;
-&lt;p&gt;Of course, any sane person would call &lt;code&gt;sklearn.mixture.GaussianMixture&lt;/code&gt; and just do &lt;code&gt;GMM.fit(X)&lt;/code&gt;. But that is way too efficient. We start with some standard import:&lt;/p&gt;
+&lt;p&gt;Of course, any sane person would call &lt;code class=&quot;highlighter-rouge&quot;&gt;sklearn.mixture.GaussianMixture&lt;/code&gt; and just do &lt;code class=&quot;highlighter-rouge&quot;&gt;GMM.fit(X)&lt;/code&gt;. But that is way too efficient. We start with some standard import:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;import numpy as np
-# bit confusing, one is used to draw from, the other is used for evaluation
-from numpy.random import multivariate_normal as mv_n
-from scipy.stats import multivariate_normal
-import matplotlib.pyplot as plt
-from numpy.testing import assert_array_almost_equal
-&lt;/code&gt;&lt;/pre&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;np&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# bit confusing, one is used to draw from, the other is used for evaluation&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy.random&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;multivariate_normal&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mv_n&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;scipy.stats&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;multivariate_normal&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib.pyplot&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;plt&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy.testing&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;assert_array_almost_equal&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;h3 id=&quot;321-dataground-truth-generation&quot;&gt;3.2.1 Data/Ground Truth Generation&lt;/h3&gt;
 &lt;p&gt;First, let’s generate our dataset. Define the ground truth parameters that we wish to estimate:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;N = 500 # total number of data points
-μ1, μ2, μ3 = [-0.5, 0], [-1, 1], [0.25, 0.5] # cluster mean d = 2
-# cluster standard deviation
-σ1, σ2, σ3 = .05 * np.eye(2), .1 * np.eye(2), .15 * np.eye(2)
-π1, π2, π3 = 0.3, 0.4, 0.3 # mixing proportions
-# needs to be a valid categorical distribution
-assert sum([π1, π2, π3])==1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The dataset is drawn according to our model:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;μs, σs, πs = [μ1, μ2, μ3], [σ1, σ2, σ3], [π1, π2, π3]
-X = [normal(μ, σ, (int(N*π), 2)) for μ, σ, π in zip(μs, σs, πs)]
-# Reshape to our N x d dataset
-X = np.concatenate(X, axis=0)
 
-plt.scatter(X[:, 0], X[:, 1]); # visualize data generated
-&lt;/code&gt;&lt;/pre&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;500&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# total number of data points&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.25&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# cluster mean d = 2&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# cluster standard deviation&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mo&quot;&gt;05&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;eye&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;eye&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;eye&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.3&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# mixing proportions&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# needs to be a valid categorical distribution&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;assert&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The dataset is drawn according to our model:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table style=&quot;border-spacing: 0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;gutter gl&quot; style=&quot;text-align: right&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;normal&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;zip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Reshape to our N x d dataset&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;concatenate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scatter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# visualize data generated&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
 &lt;p&gt;we observe the dataset at the beginning of the section (three fairly distinct clusters).&lt;/p&gt;
 
 &lt;p&gt;We also need to initialise guesses for our model parameters. Here we sample from a normal distribution for the cluster centres, and guess identity covariance matrix and uniform mixing proportion:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;μs, σs, πs = np.array(μs), np.array(σs), np.array(πs)
-μ0, σ0, π0 = np.random.randn(*μs.shape), np.array([np.eye(2)]*3), np.ones(πs.shape)/3
-&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table style=&quot;border-spacing: 0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;gutter gl&quot; style=&quot;text-align: right&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;eye&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
 
 &lt;h3 id=&quot;322-e-step&quot;&gt;3.2.2 E-Step&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;E&lt;/strong&gt;-step update rule is reproduced here for convenience:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 q\left(z_{i}=c\right)=\frac{\mathcal{N}\left(x_{i} | \mu_{c}, \sigma_{c}^{2}\right) \pi_{c}}{\sum_{k} \mathcal{N}\left(x_{i} | \mu_{k}, \sigma_{k}^{2}\right) \pi_{k}}
 $$&lt;/code&gt;
 the corresponding code is simply:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def e_step(X, μs, σs, πs):
-    N, d, C = *X.shape, len(πs)
-    q = np.zeros((N, C)) # q(z)
-    p = np.zeros((N, C)) # p(x|z)
-    for c in range(C):
-        # density function evaluation at our data points
-        p[:, c] = multivariate_normal(mean=μs[c], cov=σs[c]).pdf(X)
-    p *= πs # weight by mixing proportion
-    q = p / np.sum(p, axis=1, keepdims=True)
-    return q
-&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table style=&quot;border-spacing: 0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;gutter gl&quot; style=&quot;text-align: right&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6
+7
+8
+9
+10&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;e_step&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;q&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# q(z)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# p(x|z)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# density function evaluation at our data points&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;multivariate_normal&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mean&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cov&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pdf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*=&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# weight by mixing proportion&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;q&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keepdims&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
 &lt;p&gt;As a sanity check, under the variational distribution, likelihood of each data point for all clusters should sum to one:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;q = e_step(X, μ0, σ0, π0)
-assert_array_almost_equal(np.sum(q, axis=1), np.ones(len(q)))
-&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table style=&quot;border-spacing: 0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;gutter gl&quot; style=&quot;text-align: right&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;n&quot;&gt;q&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e_step&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;assert_array_almost_equal&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
 &lt;h3 id=&quot;323-m-step&quot;&gt;3.2.3 M-Step&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;M&lt;/strong&gt;-step update rule is copied here for all three classes of parameters:
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \mu_{k}=\frac{\sum_{i} q\left(z_{i}=k\right) x_{i}}{\sum_{i} q\left(z_{i}=k\right)}
 $$&lt;/code&gt;
-&lt;code&gt;$$
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \sigma_{k}^{2}=\frac{\sum_{i}\left(x_{i}-\mu_{k}\right)^{T}(x_{i}-\mu_{k}) q\left(z_{i}=k\right)}{\sum_{i} q\left(z_{i}=k\right)}$$&lt;/code&gt;
-&lt;code&gt;$$\pi_{k}=\frac{\sum_{i} q\left(z_{i}=k\right)}{N}
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\pi_{k}=\frac{\sum_{i} q\left(z_{i}=k\right)}{N}
 $$&lt;/code&gt;
 Note we slightly modified covariance matrix update rule so it involves an outer product (realised I probably should have worked in vector form earlier, but oh well). The code becomes:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def m_step(X, q):
-    N, d, C = *X.shape, q.shape[1]
-    μs, σs, πs = np.zeros((C, d)), np.zeros((C, d, d)), np.zeros(C)
-    for c in range(C):
-        q_sum = np.sum(q[:, c]) # q summed over all data points
-        # update cluster mean
-        μs[c, :] = np.sum(q[:, c].reshape(N,1) * X, axis=0) / q_sum
-        # update cluster std
-        σs[c] = np.sum([q[i, c] * np.outer(X[i,:] - μs[c,:], X[i,:] - μs[c,:])\
-                        for i in range(N)], axis=0) / q_sum
-        # update mixing proportions
-        πs[c] = q_sum / N
-    return μs, σs, πs
-&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table style=&quot;border-spacing: 0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;gutter gl&quot; style=&quot;text-align: right&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;m_step&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;q_sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# q summed over all data points&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# update cluster mean&lt;/span&gt;
+        &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reshape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;q_sum&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# update cluster std&lt;/span&gt;
+        &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;outer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,:]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,:],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,:]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,:])&lt;/span&gt;\
+                        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;q_sum&lt;/span&gt;
+        &lt;span class=&quot;c&quot;&gt;# update mixing proportions&lt;/span&gt;
+        &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;q_sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;π&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
 
 &lt;h3 id=&quot;324-wrapping-up&quot;&gt;3.2.4 Wrapping Up&lt;/h3&gt;
 &lt;p&gt;In theory, we need to check for convergence by evaluation the variational lower bound. This is omitted here. Instead, we run simulation for 150 time steps and obtain:&lt;/p&gt;
