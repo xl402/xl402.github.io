@@ -41,7 +41,7 @@
 .notice {
   $notice-bg: #d6e3ea;
   $notice-border-color: rgba(200, 212, 218, .4);
-  $notice-icon: '\e88e';
+  $notice-icon: '\ea0c';
   $notice-icon-color: #596267;
 
   @include notice($notice-bg, $notice-border-color, $notice-icon, $notice-icon-color)
