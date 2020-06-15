@@ -318,7 +318,7 @@ you are effectively asking: what is the chance of this data point belonging to c
 <code class="highlighter-rouge">$$
 \theta^* = \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log p\left(x_{i}, z_{i}=c | \theta\right) = \arg\max_\theta \mathcal{G}
 $$</code>
-where <code class="highlighter-rouge">$\mathcal{G}$</code> is just a short hand for the joint density, and $\theta$ are the mixture proportion <code class="highlighter-rouge">$\pi_c$</code> terms, the Gaussian centres <code class="highlighter-rouge">$\mu_c$</code> and <code class="highlighter-rouge">$\sigma^2_c$</code> terms.
+where <code class="highlighter-rouge">$\mathcal{G}$</code> is just a short hand for the joint density, and <code class="highlighter-rouge">$\theta$</code> are the mixture proportion <code class="highlighter-rouge">$\pi_c$</code> terms, the Gaussian centres <code class="highlighter-rouge">$\mu_c$</code> and <code class="highlighter-rouge">$\sigma^2_c$</code> terms.
 <p>Note that here, <code class="highlighter-rouge">$q(z_i)$</code> is fixed, even though from the <strong>E</strong>-step they depend on our parameters. Writing <code class="highlighter-rouge">$\mathcal{G}$</code> out fully:
 <p><code class="highlighter-rouge">$$
 \mathcal{G} = \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log\left(\dfrac{1}{\sigma_c \sqrt{2\pi}}\exp\left(\dfrac{-(x_i-\mu_c)^2}{2\sigma_c^2}\right)\pi_c\right)
@@ -334,7 +334,7 @@ since for all <code class="highlighter-rouge">$c\neq k$</code> the gradient is z
 <code class="highlighter-rouge">$$
 \mu_k = \dfrac{\sum_i q(z_i=k)x_i}{\sum_i q(z_i=k)}
 $$</code>
-The same can be done to $\sigma_k^2$ (via high school calculus) to obtain:
+The same can be done to <code class="highlighter-rouge">$\sigma_k^2$</code> (via high school calculus) to obtain:
 <code class="highlighter-rouge">$$
 \sigma_k^2 =\frac{\sum_{i}\left(x_{i}-\mu_{k}\right)^{2} q\left(z_{i}=k\right)}{\sum_{i} q\left(z_{i}=k\right)}
 $$</code>

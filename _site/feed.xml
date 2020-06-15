@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 15 Jun 2020 12:01:03 +0100</pubDate>
-    <lastBuildDate>Mon, 15 Jun 2020 12:01:03 +0100</lastBuildDate>
+    <pubDate>Mon, 15 Jun 2020 12:06:11 +0100</pubDate>
+    <lastBuildDate>Mon, 15 Jun 2020 12:06:11 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -228,7 +228,7 @@ you are effectively asking: what is the chance of this data point belonging to c
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \theta^* = \arg \max _{\theta} \sum_{i} \sum_{c} q\left(z_{i}=c\right) \log p\left(x_{i}, z_{i}=c | \theta\right) = \arg\max_\theta \mathcal{G}
 $$&lt;/code&gt;
-where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{G}$&lt;/code&gt; is just a short hand for the joint density, and $\theta$ are the mixture proportion &lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi_c$&lt;/code&gt; terms, the Gaussian centres &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_c$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^2_c$&lt;/code&gt; terms.&lt;/p&gt;
+where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{G}$&lt;/code&gt; is just a short hand for the joint density, and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; are the mixture proportion &lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi_c$&lt;/code&gt; terms, the Gaussian centres &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_c$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^2_c$&lt;/code&gt; terms.&lt;/p&gt;
 
 &lt;p&gt;Note that here, &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt; is fixed, even though from the &lt;strong&gt;E&lt;/strong&gt;-step they depend on our parameters. Writing &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{G}$&lt;/code&gt; out fully:&lt;/p&gt;
 
@@ -246,7 +246,7 @@ since for all &lt;code class=&quot;highlighter-rouge&quot;&gt;$c\neq k$&lt;/code
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \mu_k = \dfrac{\sum_i q(z_i=k)x_i}{\sum_i q(z_i=k)}
 $$&lt;/code&gt;
-The same can be done to $\sigma_k^2$ (via high school calculus) to obtain:
+The same can be done to &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma_k^2$&lt;/code&gt; (via high school calculus) to obtain:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$
 \sigma_k^2 =\frac{\sum_{i}\left(x_{i}-\mu_{k}\right)^{2} q\left(z_{i}=k\right)}{\sum_{i} q\left(z_{i}=k\right)}
 $$&lt;/code&gt;
