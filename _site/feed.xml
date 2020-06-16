@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 15 Jun 2020 19:17:34 +0100</pubDate>
-    <lastBuildDate>Mon, 15 Jun 2020 19:17:34 +0100</lastBuildDate>
+    <pubDate>Tue, 16 Jun 2020 13:46:48 +0100</pubDate>
+    <lastBuildDate>Tue, 16 Jun 2020 13:46:48 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -26,7 +26,7 @@
 &lt;h2 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h2&gt;
 &lt;p&gt;EM aims to tackle a family of models termed &lt;strong&gt;latent variable models&lt;/strong&gt; (examples like GMM, LDA, etc). Their graphical representation can be compactly represented as:&lt;/p&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
 &lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; is our data-points in the dataset &lt;code class=&quot;highlighter-rouge&quot;&gt;$X = \{x_0, \cdots x_N\}$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; is the latent variables associated with each datapoint. The edge represents that &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; is conditioned by &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt;. Albeit this graphical model looks simple, to fully specify the model, we need to:&lt;/p&gt;
@@ -74,7 +74,7 @@ $$&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;One thing to get our head around is that in &lt;strong&gt;E&lt;/strong&gt;-step, we are essentially taking derivative w.r.t. a &lt;strong&gt;function&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(z_i)$&lt;/code&gt;. These two steps can be seen more clearly in the picture below.&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/8egXBCs.gif&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/8egXBCs.gif&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
 
 &lt;p&gt;Derivation later will show exactly how we have arrived at &lt;strong&gt;E&lt;/strong&gt; and &lt;strong&gt;M&lt;/strong&gt; steps, but jumping ahead, these two steps are equivalent to:&lt;/p&gt;
 
@@ -179,16 +179,16 @@ Again, we definitely know what &lt;code class=&quot;highlighter-rouge&quot;&gt;$
 &lt;h3 id=&quot;model-definition&quot;&gt;Model Definition&lt;/h3&gt;
 
 &lt;p&gt;Remember the graph earlier?&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 &lt;p&gt;Here we define exactly what the model parameters are for a GMM. First let’s look at what GMM is trying to achieve:&lt;/p&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/AGe3avl.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/AGe3avl.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
 
 &lt;p&gt;Left figure above is the data points that you have obtained, through some prior knowledge or by inspecting the plots, &lt;strong&gt;you believe&lt;/strong&gt; that the data points come from &lt;strong&gt;three Gaussian distributions&lt;/strong&gt;, and you wish to fit the Gaussian centres and variances to the data points (shown on the right).&lt;/p&gt;
 
 &lt;p&gt;To apply latent variable modelling, we think about “how do we &lt;strong&gt;generate&lt;/strong&gt; these data points with a probabilistic model?”. Let &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_i$&lt;/code&gt; follow a categorical distribution (three categories) which define the proportion of data points that belong to each cluster. When &lt;strong&gt;conditioned&lt;/strong&gt; on the categories, the data point &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_i$&lt;/code&gt; follows a gaussian distribution. Model parameters are therefore &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta = [\pi_1, \cdots, \pi_c, \mu_1, \cdots, \mu_c, \sigma^2_1, \cdots \sigma^2_c]$&lt;/code&gt;, which are the distribution over categories, mean and standard deviaiton of each cluster centre. We restrict ourselves to fitting &lt;strong&gt;isotropic&lt;/strong&gt; Gaussians, although in practice, you can find the MLE covariance matrix (maths will of course be more disgusting).&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/1Mb2T0E.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/1Mb2T0E.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
 
 &lt;p&gt;Given this mode, we can write down the &lt;strong&gt;likelihood of our data points&lt;/strong&gt; under the model:&lt;/p&gt;
 
@@ -342,11 +342,11 @@ Note we slightly modified covariance matrix update rule so it involves an outer 
 
 &lt;h3 id=&quot;324-wrapping-up&quot;&gt;3.2.4 Wrapping Up&lt;/h3&gt;
 &lt;p&gt;In theory, we need to check for convergence by evaluation the variational lower bound. This is omitted here. Instead, we run simulation for 150 time steps and obtain:&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/M7VCEve.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/M7VCEve.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
 
 &lt;p&gt;So as anticipated, our GMM indeed fitted three Gaussians onto the data points. Visually the fit is not bad. But how do the estimated parameters fair with the ground truth? We visualise the phase portrait for cluster means (2D) and variances within the covariance matrix (also 2D) across iterations. Plots below show the ground truth of model parameters in black, and the trajectories GMM generated across the iteration. We observe very good agreement between the predicted locations and ground truth!&lt;/p&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.imgur.com/M27QOCA.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/M27QOCA.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
 
 &lt;p&gt;In summary, we have show how EM algorithm at heart does maximum likelihood estimation of the dataset being generated by a given model. Again it is worth reflecting on the fact that neither &lt;strong&gt;E&lt;/strong&gt; or &lt;strong&gt;M&lt;/strong&gt; step guarantees closed form solution. This sets up the motivation for future blog posts regarding variational inference and Monte Carlo based methods. Finally, this post wouldn’t be complete if I didn’t include a link to Carl Rasmussen’s &lt;a href=&quot;http://mlg.eng.cam.ac.uk/teaching/4f13/1819/expectation%20maximization.pdf&quot;&gt;lecture notes&lt;/a&gt; on EM (it is super condensed, but good as a quick memory refresher). The &lt;a href=&quot;https://www.youtube.com/watch?v=rVfZHWTwXSA&amp;amp;t=4230s&quot;&gt;best talk&lt;/a&gt; I can find online is given by Andrew Ng, which explains both the overall concept really well and does not shy away from the derivations.&lt;/p&gt;
 </description>

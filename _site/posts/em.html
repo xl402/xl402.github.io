@@ -79,7 +79,7 @@
     margin-bottom: 2em;
   }
   .em::before {
-    background-image: url('https://imgur.com/5zMQ7ys.jpg');
+    background-image: url('https://filmot.com/5zMQ7ys.jpg');
     background-size: cover;
     -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
     content:'';
@@ -147,7 +147,7 @@
 <h1 id="2-theory-of-em">2. Theory of EM</h1>
 <h2 id="21-what-is-it-trying-to-solve">2.1 What is it trying to solve?</h2>
 <p>EM aims to tackle a family of models termed <strong>latent variable models</strong> (examples like GMM, LDA, etc). Their graphical representation can be compactly represented as:
-<center><img src="https://i.imgur.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
+<center><img src="https://i.filmot.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
 <p>
 <p>where <code class="highlighter-rouge">$x_i$</code> is our data-points in the dataset <code class="highlighter-rouge">$X = \{x_0, \cdots x_N\}$</code> and <code class="highlighter-rouge">$z_i$</code> is the latent variables associated with each datapoint. The edge represents that <code class="highlighter-rouge">$x_i$</code> is conditioned by <code class="highlighter-rouge">$z_i$</code>. Albeit this graphical model looks simple, to fully specify the model, we need to:
 <ul>
@@ -185,7 +185,7 @@ $$</code>
 </ul>
 <p>One thing to get our head around is that in <strong>E</strong>-step, we are essentially taking derivative w.r.t. a <strong>function</strong> <code class="highlighter-rouge">$q(z_i)$</code>. These two steps can be seen more clearly in the picture below.
 <p>
-<center><img src="https://i.imgur.com/8egXBCs.gif" alt="drawing" width="600" /></center>
+<center><img src="https://i.filmot.com/8egXBCs.gif" alt="drawing" width="600" /></center>
 <p>Derivation later will show exactly how we have arrived at <strong>E</strong> and <strong>M</strong> steps, but jumping ahead, these two steps are equivalent to:
 <div class="notice">
  <ul>
@@ -279,13 +279,13 @@ Again, we definitely know what <code class="highlighter-rouge">$p(X, Z | \theta)
 <h2 id="31-derivation">3.1 Derivation</h2>
 <h3 id="model-definition">Model Definition</h3>
 <p>Remember the graph earlier?
-<center><img src="https://i.imgur.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
+<center><img src="https://i.filmot.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
 <p>
 <p>Here we define exactly what the model parameters are for a GMM. First let’s look at what GMM is trying to achieve:
-<center><img src="https://i.imgur.com/AGe3avl.png" alt="drawing" width="600" /></center>
+<center><img src="https://i.filmot.com/AGe3avl.png" alt="drawing" width="600" /></center>
 <p>Left figure above is the data points that you have obtained, through some prior knowledge or by inspecting the plots, <strong>you believe</strong> that the data points come from <strong>three Gaussian distributions</strong>, and you wish to fit the Gaussian centres and variances to the data points (shown on the right).
 <p>To apply latent variable modelling, we think about “how do we <strong>generate</strong> these data points with a probabilistic model?”. Let <code class="highlighter-rouge">$z_i$</code> follow a categorical distribution (three categories) which define the proportion of data points that belong to each cluster. When <strong>conditioned</strong> on the categories, the data point <code class="highlighter-rouge">$x_i$</code> follows a gaussian distribution. Model parameters are therefore <code class="highlighter-rouge">$\theta = [\pi_1, \cdots, \pi_c, \mu_1, \cdots, \mu_c, \sigma^2_1, \cdots \sigma^2_c]$</code>, which are the distribution over categories, mean and standard deviaiton of each cluster centre. We restrict ourselves to fitting <strong>isotropic</strong> Gaussians, although in practice, you can find the MLE covariance matrix (maths will of course be more disgusting).
-<center><img src="https://i.imgur.com/1Mb2T0E.png" alt="drawing" width="600" /></center>
+<center><img src="https://i.filmot.com/1Mb2T0E.png" alt="drawing" width="600" /></center>
 <p>Given this mode, we can write down the <strong>likelihood of our data points</strong> under the model:
 <p><code class="highlighter-rouge">$$
 p(x_i |\theta) = \sum_c p(x_i|z_i=c, \theta)p(z_i=c|\theta) = \sum_c p(x_i|z_i=c, \theta) \pi_c
@@ -415,9 +415,9 @@ Note we slightly modified covariance matrix update rule so it involves an outer 
     <span class="k">return</span> <span class="err">μ</span><span class="n">s</span><span class="p">,</span> <span class="err">σ</span><span class="n">s</span><span class="p">,</span> <span class="err">π</span><span class="n">s</span></code></pre></figure>
 <h3 id="324-wrapping-up">3.2.4 Wrapping Up</h3>
 <p>In theory, we need to check for convergence by evaluation the variational lower bound. This is omitted here. Instead, we run simulation for 150 time steps and obtain:
-<center><img src="https://i.imgur.com/M7VCEve.png" alt="drawing" width="1000" /></center>
+<center><img src="https://i.filmot.com/M7VCEve.png" alt="drawing" width="1000" /></center>
 <p>So as anticipated, our GMM indeed fitted three Gaussians onto the data points. Visually the fit is not bad. But how do the estimated parameters fair with the ground truth? We visualise the phase portrait for cluster means (2D) and variances within the covariance matrix (also 2D) across iterations. Plots below show the ground truth of model parameters in black, and the trajectories GMM generated across the iteration. We observe very good agreement between the predicted locations and ground truth!
-<center><img src="https://i.imgur.com/M27QOCA.png" alt="drawing" width="1000" /></center>
+<center><img src="https://i.filmot.com/M27QOCA.png" alt="drawing" width="1000" /></center>
 <p>In summary, we have show how EM algorithm at heart does maximum likelihood estimation of the dataset being generated by a given model. Again it is worth reflecting on the fact that neither <strong>E</strong> or <strong>M</strong> step guarantees closed form solution. This sets up the motivation for future blog posts regarding variational inference and Monte Carlo based methods. Finally, this post wouldn’t be complete if I didn’t include a link to Carl Rasmussen’s <a href="http://mlg.eng.cam.ac.uk/teaching/4f13/1819/expectation%20maximization.pdf">lecture notes</a> on EM (it is super condensed, but good as a quick memory refresher). The <a href="https://www.youtube.com/watch?v=rVfZHWTwXSA&amp;t=4230s">best talk</a> I can find online is given by Andrew Ng, which explains both the overall concept really well and does not shy away from the derivations.
 </article>
 <aside class="related">
