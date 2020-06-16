@@ -8,6 +8,8 @@ published: true
 <div class="page" markdown="1">
 
 {% capture page_subtitle %}
+
+
 <img
     class="me"
     alt="{{ author.name }}"
