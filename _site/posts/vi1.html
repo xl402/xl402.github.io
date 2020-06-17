@@ -168,6 +168,44 @@ The gold standard approach to obtain the posterior <code class="highlighter-roug
 <p>To think about this in terms of optimisation: the posterior distribution lives in some complicated space, we wish to find the optimum distribution <code class="highlighter-rouge">$q^*(\theta)$</code> which is <em>closest</em> to the posterior, and come from a family of <em>“nice”</em> distribution (pictorially shown on the right). i.e.
 <code class="highlighter-rouge">$$q^* = \arg\min_{q\in Q}c(q(\theta), p(\theta|X))$$</code>
 with <code class="highlighter-rouge">$c$</code> being the “closeness” function. Two things we need to further define - what is <em>“nice”</em> and what is <em>“close”</em>?
+Let’s talk about <em>“nice”</em> first. Recall what we really want at the end of the day is to be able to report <strong>mean</strong> and <strong>variance</strong> of the (approximated) posterior distribution. Hence the family of distributions <code class="highlighter-rouge">$Q$</code> are typically:
+<ul>
+ <li>low dimensional (which motivates the idea of mean-field as we will see later)
+ <li>often belong to the <a href="https://stats.stackexchange.com/questions/411893/advantages-of-the-exponential-family-why-should-we-study-it-and-use-it">exponential family</a> (Gaussian, exponential, Bernoulli, categorical, beta, Dirichlet + pretty much every distribution that came up during our undergraduate course except for binomial and multinomial)
+</ul>
+<p>Next on the topic of <em>“close”</em>, note I did not use the word <em>distance</em>, since <em>distance</em> between two distributions entails both symmetry and positive definiteness. The default “closeness” function <code class="highlighter-rouge">$c()$</code> that is used in VI is in fact the Kullback-Leibler (KL) divergence:
+<code class="highlighter-rouge">$$KL(q(\theta)|| p(\theta | X))$$</code>
+which is definitely <strong>not symmetric</strong>. While it seems to be a reasonable function to choose for measuring closeness between two distributions, we can certainly question:
+<ol>
+ <li>why KL? Why not other metrics?
+ <li>why did we choose the order of divergence to be <code class="highlighter-rouge">$q||p$</code> but not <code class="highlighter-rouge">$p||q$</code>
+</ol>
+<p>the short answer for the first question is that - because it makes maths simpler and it is <strong>shown</strong> to provide good approximations. The complete maths for VI is as follows, our objective is:
+<code class="highlighter-rouge">$$q^{*}=\operatorname{argmin}_{q \in Q} \operatorname{KL}(q(\theta) \| p(\theta | X))$$</code>
+we know under KL measurement, if <code class="highlighter-rouge">$Q$</code> covers all the distributions there are, we just need to set <code class="highlighter-rouge">$q(\theta)=p(\theta | X)$</code> to achieve <code class="highlighter-rouge">$\operatorname{KL}=0$</code>. But <strong>we do not know what the posterior is</strong>, nor do we want to calculate it via that intractable integral. Instead, we write KL in it’s full form:
+<code class="highlighter-rouge">$$\operatorname{KL}(q(\theta) \| p(\theta | X)) = \int_\theta q(\theta) \log \frac{q(\theta)}{p(\theta | X)} d \theta \quad [1]$$</code>
+and re-write the posterior:
+<code class="highlighter-rouge">$$\operatorname{KL}(\cdots)=\int_\theta q(\theta) \log \frac{q(\theta) p(X)}{p(\theta, X)} d \theta=\log p(X)-\int_\theta q(\theta) \log \frac{p(\theta, X)}{q(\theta)} d \theta \quad [2]$$</code>
+and recall <code class="highlighter-rouge">$p(X)$</code> term is intractable, but it does not depend on <code class="highlighter-rouge">$q$</code>, hence to find the optimum <code class="highlighter-rouge">$q$</code> we completely avoided this intractable term! <code class="highlighter-rouge">$p(\theta, X)$</code> can be evaluated easily since we needed it to construct our model in the first place (step one of the three procedures in the previous section).  Our objective function becomes:
+<code class="highlighter-rouge">$$q^* = \operatorname{argmax}_{q \in Q}\int_\theta q(\theta) \log \frac{p(\theta, X)}{q(\theta)} d \theta$$</code>
+(argmax because we are minimising the negative). This objective function is given the confusing name “Evidence lower bound” (ELBO), because if we look at equation <code class="highlighter-rouge">$[2]$</code>, KL divergence is none-negative, the evidence term <code class="highlighter-rouge">$\log p(X)$</code> is a constant, hence the remaining term is a lower bound on the evidence term.
+I find this ELBO objective more intuitive by expanding it fully:
+<code class="highlighter-rouge">$$q^{*}=\operatorname{argmax}_{q \in Q}\text{ELBO} = \int_\theta q(\theta) \log p(\theta, X)d\theta - \int_\theta q(\theta)\log q(\theta)$$</code>
+<code class="highlighter-rouge">$$ = \operatorname{argmax}_{q \in Q} \mathbb{E}_{\theta \sim q}[p(\theta, X)] + \mathcal{H}(q(\theta))$$</code>
+where <code class="highlighter-rouge">$\mathcal{H}(q(\theta))$</code> is the entropy of our posterior approximation (a.k.a variational distribution). We see maximising the ELBO objective has two contradictive and competing sub-objectives:
+<ol>
+ <li><code class="highlighter-rouge">$\mathbb{E}_{\theta \sim q}[p(\theta, X)]$</code> can be seen as maxising the likelihood of our dataset being generated by our parameters (drawn from <code class="highlighter-rouge">$q$</code>) and our model (fixed). <strong>Prefers point estimates of <code class="highlighter-rouge">$\theta$</code></strong>
+ <li><code class="highlighter-rouge">$\mathcal{H}(q(\theta))$</code> entropy term, which <strong>prefers uncertain estimates of <code class="highlighter-rouge">$\theta$</code></strong>
+</ol>
+<p>It is these two competing objectives that makes Bayesian inference so attractive, and less prone to overfitting! i.e. we want a good fit to our dataset but also uncertainty in our parameters.
+<p class="notice">To summarise, variational inference aims to approximate the intractable posterior <code class="highlighter-rouge">$p(\theta|X)$</code> with some “nice” distribution <code class="highlighter-rouge">$q^*(\theta)$</code>. Approximation is turned into an optimisation problem, where the objective function is ELBO: <code class="highlighter-rouge">$$q^{*}=\operatorname{argmax}_{q \in Q} \mathrm{ELBO} = \operatorname{argmax}_{q \in Q} \int_{\theta} q(\theta) \log \frac{p(\theta, X)}{q(\theta)} d \theta$$</code>
+<p>Now we circle back to an earlier problem we raised - why did we take <code class="highlighter-rouge">$\text{KL}(q||p)$</code>? Why not <code class="highlighter-rouge">$\text{KL}(p||q)$</code>. In short, inspecting equation <code class="highlighter-rouge">$[1]$</code>, had we taken the divergence the other way round, we would end up taking expectation over our intractable posterior <code class="highlighter-rouge">$p(\theta|X)$</code>. This sort of maximisation is actually still possible, and is termed <em>Belief-Propagation</em> (which will not be discussed here). What is the effect of the order? Observe that:
+<code class="highlighter-rouge">$$\mathrm{KL}(q(x) \| p(x)) = \int_x q(x)\dfrac{q(x)}{p(x)} dx $$</code>
+in the cases where <code class="highlighter-rouge">$p(x)$</code> is very close or equal to zero (i.e. low-likelihood regions), the only way to minimise the divergence is to <strong>ensure <code class="highlighter-rouge">$q(x)$</code> is close to zero at these locations</strong>. Hence we say that <code class="highlighter-rouge">$\mathrm{KL}(q\| p)$</code> is <strong>zero-seeking</strong>. Similar argument may be made for <code class="highlighter-rouge">$\mathrm{KL}(p\| q)$</code> which is called <strong>zero-avoiding</strong>. This is more intuitive through graphical visualisation. Suppose we want to approximate a bimodal distribution with a Gaussian, graphs below shows the behaviour of the two minimisation methods:
+<center><img src="https://i.filmot.com/GTYI3gm.png" alt="drawing" width="800" /></center>
+<p>
+<p>where the blue line is the true posterior <code class="highlighter-rouge">$p(\theta|X)$</code>, red lines are our variational approximations. So methods with <code class="highlighter-rouge">$q||p$</code> tends to <strong>under estimate</strong> the posterior variance, c.f. over estimation in <code class="highlighter-rouge">$p||q$</code>. Both can be quiet bad if you think about the real-life impact (under estimating uncertainty in getting cancer and over estimating it). A lot of research is done on finding alternative methods/metrics, which of course is beyong the scope of this post.
+<h3 id="22-mean-field-approximation">2.2 Mean-Field Approximation</h3>
 </article>
 <aside class="related">
 <h2>Related posts</h2>
