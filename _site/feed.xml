@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 17 Jun 2020 15:57:02 +0100</pubDate>
-    <lastBuildDate>Wed, 17 Jun 2020 15:57:02 +0100</lastBuildDate>
+    <pubDate>Wed, 17 Jun 2020 18:55:21 +0100</pubDate>
+    <lastBuildDate>Wed, 17 Jun 2020 18:55:21 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -20,8 +20,8 @@
 
 &lt;p&gt;VI is an advanced topic, so intermediate-level probability theory and ML knowledge are assumed. Knowledge of the &lt;a href=&quot;https://www.youtube.com/watch?v=ErfnhcEV1O8&quot;&gt;&lt;em&gt;Kullback–Leibler&lt;/em&gt;&lt;/a&gt; (KL) divergence is also expected. To better understand Bayesian GMM (which will be maths heavy), I would like to recommend my previous post on &lt;a href=&quot;https://xl402.github.io/posts/em&quot;&gt;Expectation Maximisation&lt;/a&gt; and &lt;a href=&quot;https://www.youtube.com/watch?v=REypj2sy_5U&amp;amp;t=329s&quot;&gt;this&lt;/a&gt; video for intuition. Let’s dive in!&lt;/p&gt;
 
-&lt;h2 id=&quot;2-theory-of-vi&quot;&gt;2. Theory of VI&lt;/h2&gt;
-&lt;h3 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h3&gt;
+&lt;h1 id=&quot;2-theory-of-vi&quot;&gt;2. Theory of VI&lt;/h1&gt;
+&lt;h2 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h2&gt;
 &lt;p&gt;Let’s start with the classic bayesian inference equation:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(\theta|X) = \dfrac{p(X|\theta)p(\theta)}{p(X)}$$&lt;/code&gt;
 in words:
@@ -41,7 +41,7 @@ suppose in our model, our parameter space includes things like “cluster mean�
 &lt;p&gt;not really looking pretty… since we are integrating over some pretty complicated, high dimensional function over a high dimensional space. As with a lot of real life problems, this integration typically has no closed form, and it will be extremely inefficient to use numerical integration tools due to the high dimensionality.
 The gold standard approach to obtain the posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt; is to use Markov Chain Monte Carlo (MCMC), which deserves a separate blog post. But in short MCMC provides an unbiased estimate of the posterior, i.e. if you run it for long enough, you are guaranteed to become arbitrarily close to the posterior. But we run into the same problem of “running it for long enough”, turns out, for large dataset and parameters, “long enough” is “too long to be acceptable for development/production”. What would be a &lt;strong&gt;fast&lt;/strong&gt; and &lt;strong&gt;reliable&lt;/strong&gt; (good enough approximate) of the posterior? Here comes variational inference!&lt;/p&gt;
 
-&lt;h3 id=&quot;21-vi-overview&quot;&gt;2.1 VI Overview&lt;/h3&gt;
+&lt;h2 id=&quot;22-vi-overview&quot;&gt;2.2 VI Overview&lt;/h2&gt;
 &lt;p&gt;Essentially, variational inference turns the &lt;em&gt;numerical integral&lt;/em&gt; problem into an &lt;em&gt;optimisation&lt;/em&gt; problem. Remember what we want to obtain is the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, which can be pretty complicated looking (we in fact don’t normally know what it looks like). In VI, we try to approximate this distribution with a &lt;em&gt;nice&lt;/em&gt; distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; (more on &lt;em&gt;“nice”&lt;/em&gt; later, for now, picture Gaussian). Graphically speaking, left figure below shows what we might want to achieve:&lt;/p&gt;
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/umR5NCD.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
@@ -91,13 +91,13 @@ in the cases where &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(x)$&lt;/co
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/GTYI3gm.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
-&lt;p&gt;where the blue line is the true posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, red lines are our variational approximations. So methods with &lt;code class=&quot;highlighter-rouge&quot;&gt;$q||p$&lt;/code&gt; tends to &lt;strong&gt;under estimate&lt;/strong&gt; the posterior variance, c.f. over estimation in &lt;code class=&quot;highlighter-rouge&quot;&gt;$p||q$&lt;/code&gt;. Both can be quiet bad if you think about the real-life impact (under estimating uncertainty in getting cancer and over estimating it). A lot of research is done on finding alternative methods/metrics, which of course is beyond the scope of this post.&lt;/p&gt;
+&lt;p&gt;where the blue line is the true posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, red lines are our variational approximations. So methods with &lt;code class=&quot;highlighter-rouge&quot;&gt;$q||p$&lt;/code&gt; tends to &lt;strong&gt;under estimate&lt;/strong&gt; the posterior variance, c.f. over estimation in &lt;code class=&quot;highlighter-rouge&quot;&gt;$p||q$&lt;/code&gt;. Both can be quiet bad if you think about the real-life impact (under-estimating the uncertainty in getting cancer vs. over-estimating it). A lot of research is done on finding alternative methods/metrics, which of course is beyond the scope of this post.&lt;/p&gt;
 
-&lt;h3 id=&quot;22-mean-field-approximation&quot;&gt;2.2 Mean-Field Approximation&lt;/h3&gt;
+&lt;h2 id=&quot;23-mean-field-approximation&quot;&gt;2.3 Mean-Field Approximation&lt;/h2&gt;
 
 &lt;p&gt;Recall we wish to approximate the posterior using a family of &lt;em&gt;“nice”&lt;/em&gt; distributions &lt;code class=&quot;highlighter-rouge&quot;&gt;$Q$&lt;/code&gt;, one of the criteria is low dimensionality. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; contains all parameters in our model, hence it is typically high dimensional. What if we can instead fully factorise it:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$Q_{\text{MF}}:=\left\{q: q(\theta)=\prod_{j=1}^{J} q_{j}\left(\theta_{j}\right)\right\}$$&lt;/code&gt;
-so now we explicitly assume independence between parameters in our &lt;strong&gt;approximated distribution&lt;/strong&gt;. This gives us the form of mean-field (MF) variational inference. Note this is &lt;strong&gt;NOT&lt;/strong&gt; equivalent to assuming parameters are actually independent from one another.  &lt;strong&gt;Hence MF is not a modelling assumption&lt;/strong&gt;, rather an approximation assumption.
+so now we explicitly assume independence between parameters in our &lt;strong&gt;approximated distribution&lt;/strong&gt;. This gives us the form of mean-field (MF) variational inference. Note this is &lt;strong&gt;NOT&lt;/strong&gt; equivalent to assuming parameters are actually independent from one another.  &lt;strong&gt;Hence MF is not a modelling assumption&lt;/strong&gt;, but an approximation assumption.
 This factorized form of variational inference corresponds to an approximation framework developed in physics called &lt;em&gt;mean field theory&lt;/em&gt;. Now we seek the distribution within the family &lt;code class=&quot;highlighter-rouge&quot;&gt;$Q_\text{MF}$&lt;/code&gt; for which ELBO is the largest, substitution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; into ELBO:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$ \text{ELBO} = \int_\theta \prod_j q_j(\theta_j) \left\{ \log p(X,\theta) - \sum_j \log q_j (\theta) \right\} d\theta$$&lt;/code&gt;&lt;/p&gt;
 
@@ -127,7 +127,14 @@ one can painstakingly derive the update rules according to equation [3] and do c
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/ulKVOW2.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
-&lt;p&gt;in the figure above, green contours represent our true posterior, with x-axis representing posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu$&lt;/code&gt; and y-axis being posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^{-1}$&lt;/code&gt;. Blue lines are our variational mean-field approximation at each time-step. Red lines show our converged posterior approximation. As a sanity check this shows that MF provides a decent fit for our toy example (moments seem to match)!&lt;/p&gt;
+&lt;p&gt;in the figure above, green contours represent our true posterior, with x-axis representing posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu$&lt;/code&gt; and y-axis being posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^{-1}$&lt;/code&gt;. Blue lines are our variational mean-field approximation at each time-step. Red lines show our converged posterior approximation. As a sanity check this shows that MF provides a decent fit for our toy example (moments seem to match)!
+What about models where we do not know the true posterior? (i.e. most real-life models)? Recall in section 2.1 we mentioned that another common method to obtain unbiased approximations of the posterior is through MCMC. If we trust MCMC (where the convergence checking is an art itself), then we can check our VI approximated mean values for parameters against MCMC’s mean. Figures below are from &lt;a href=&quot;https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/24305/Fosdick_washington_0250E_12238.pdf?sequence=1&amp;amp;isAllowed=y&quot;&gt;Fosdick 2013&lt;/a&gt; where we see for a complicated model, VI and MCMC posteriors have good agreement.&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/g3Y6zZp.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Note from figures above, VB stands for &lt;em&gt;variational Bayes&lt;/em&gt;, which is used interchangeably with &lt;em&gt;variational inference&lt;/em&gt;. &lt;strong&gt;Do not be misled by figures above, there are plenty cases where VI is unable to provide good posterior estimations!&lt;/strong&gt; Therefore, one possible way to check VI accuracy is to use the one-time more computationally expensive MCMC (for the experiment above, MCMC took over one day), once you trust your VI (which in this case, takes less than 20 minutes), you can ditch MCMC and work with VI from there.&lt;/p&gt;
+
+&lt;h1 id=&quot;3-vi-in-practice-bayesian-gmm&quot;&gt;3. VI in Practice: Bayesian GMM&lt;/h1&gt;
 </description>
         <pubDate>Tue, 16 Jun 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/vi1</link>
