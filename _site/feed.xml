@@ -6,13 +6,13 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 17 Jun 2020 18:55:21 +0100</pubDate>
-    <lastBuildDate>Wed, 17 Jun 2020 18:55:21 +0100</lastBuildDate>
+    <pubDate>Wed, 17 Jun 2020 22:48:46 +0100</pubDate>
+    <lastBuildDate>Wed, 17 Jun 2020 22:48:46 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
         <title>Variational Inference Part 1</title>
-        <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Part 1 of 2 series on variational inference. This part first introduces high-level concept and the mean-field approximation. We then demonstrate the mean-field theory on a Bayesian Gaussian Mixture Model (Bayesian GMM).&lt;/p&gt;
+        <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Part 1 of 2 series on variational inference. This part first introduces high-level concepts and the mean-field approximation. We then demonstrate the mean-field theory on a Bayesian Gaussian Mixture Model (Bayesian GMM).&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
@@ -21,7 +21,7 @@
 &lt;p&gt;VI is an advanced topic, so intermediate-level probability theory and ML knowledge are assumed. Knowledge of the &lt;a href=&quot;https://www.youtube.com/watch?v=ErfnhcEV1O8&quot;&gt;&lt;em&gt;Kullback–Leibler&lt;/em&gt;&lt;/a&gt; (KL) divergence is also expected. To better understand Bayesian GMM (which will be maths heavy), I would like to recommend my previous post on &lt;a href=&quot;https://xl402.github.io/posts/em&quot;&gt;Expectation Maximisation&lt;/a&gt; and &lt;a href=&quot;https://www.youtube.com/watch?v=REypj2sy_5U&amp;amp;t=329s&quot;&gt;this&lt;/a&gt; video for intuition. Let’s dive in!&lt;/p&gt;
 
 &lt;h1 id=&quot;2-theory-of-vi&quot;&gt;2. Theory of VI&lt;/h1&gt;
-&lt;h2 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h2&gt;
+&lt;h2 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What Is It Trying to Solve?&lt;/h2&gt;
 &lt;p&gt;Let’s start with the classic bayesian inference equation:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(\theta|X) = \dfrac{p(X|\theta)p(\theta)}{p(X)}$$&lt;/code&gt;
 in words:
@@ -127,7 +127,7 @@ one can painstakingly derive the update rules according to equation [3] and do c
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/ulKVOW2.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
-&lt;p&gt;in the figure above, green contours represent our true posterior, with x-axis representing posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu$&lt;/code&gt; and y-axis being posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^{-1}$&lt;/code&gt;. Blue lines are our variational mean-field approximation at each time-step. Red lines show our converged posterior approximation. As a sanity check this shows that MF provides a decent fit for our toy example (moments seem to match)!
+&lt;p&gt;in figures above, green contours represent our true posterior, with x-axis representing posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu$&lt;/code&gt; and y-axis being posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^{-1}$&lt;/code&gt;. Blue lines are our variational mean-field approximation at each time-step. Red lines show our converged posterior approximation. As a sanity check this shows that MF provides a decent fit for our toy example (moments seem to match)!
 What about models where we do not know the true posterior? (i.e. most real-life models)? Recall in section 2.1 we mentioned that another common method to obtain unbiased approximations of the posterior is through MCMC. If we trust MCMC (where the convergence checking is an art itself), then we can check our VI approximated mean values for parameters against MCMC’s mean. Figures below are from &lt;a href=&quot;https://digital.lib.washington.edu/researchworks/bitstream/handle/1773/24305/Fosdick_washington_0250E_12238.pdf?sequence=1&amp;amp;isAllowed=y&quot;&gt;Fosdick 2013&lt;/a&gt; where we see for a complicated model, VI and MCMC posteriors have good agreement.&lt;/p&gt;
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/g3Y6zZp.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
@@ -135,6 +135,41 @@ What about models where we do not know the true posterior? (i.e. most real-life 
 &lt;p&gt;Note from figures above, VB stands for &lt;em&gt;variational Bayes&lt;/em&gt;, which is used interchangeably with &lt;em&gt;variational inference&lt;/em&gt;. &lt;strong&gt;Do not be misled by figures above, there are plenty cases where VI is unable to provide good posterior estimations!&lt;/strong&gt; Therefore, one possible way to check VI accuracy is to use the one-time more computationally expensive MCMC (for the experiment above, MCMC took over one day), once you trust your VI (which in this case, takes less than 20 minutes), you can ditch MCMC and work with VI from there.&lt;/p&gt;
 
 &lt;h1 id=&quot;3-vi-in-practice-bayesian-gmm&quot;&gt;3. VI in Practice: Bayesian GMM&lt;/h1&gt;
+
+&lt;h2 id=&quot;31-bayesian-gmm-vs-gmm-theory-and-derivation&quot;&gt;3.1 Bayesian GMM VS GMM: Theory and “Derivation”&lt;/h2&gt;
+&lt;p&gt;Mixture of Gaussians is a form of &lt;em&gt;latent variable models&lt;/em&gt; where we wish to infer a set of &lt;em&gt;hidden variables&lt;/em&gt; from the observed data. In our post &lt;a href=&quot;https://xl402.github.io/posts/em&quot;&gt;Expectation Maximisation Deep Dive&lt;/a&gt;, we investigated in depth the update rules associated with maximum likelihood estimation of parameters for a Gaussian Mixture Model (GMM). As a recap, we have &lt;code class=&quot;highlighter-rouge&quot;&gt;$N$&lt;/code&gt; observed data points whose positions &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_n$&lt;/code&gt; are influenced by the cluster they come from. We call &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_n$&lt;/code&gt;, a K-dimensional binary random variable that “one-hot encodes” which cluster the data point comes from (total number of clusters is &lt;code class=&quot;highlighter-rouge&quot;&gt;$K$&lt;/code&gt;). Hence:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(x_n|z_{nk}=1) =  \mathcal{N}(x_n|\mu_k ,\Sigma_k)$$&lt;/code&gt;
+We also define the concept of mixing proportion, which is the marginal distribution over &lt;code class=&quot;highlighter-rouge&quot;&gt;$z$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(z_{nk}=1)=\pi_k, \quad p(z_n) = \prod_{k=1}^K \pi_k^{z_{nk}}$$&lt;/code&gt;
+Hence we can write down the joint distribution of &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_n, z_n$&lt;/code&gt;:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(x_n, z_n) = p(x_n|z_n)p(z_n) = \prod_{k=1}^K \pi_k^{z_{nk}} \mathcal{N}\left(x_{n} | \mu_{k}, \Sigma_{k}\right)^{z_{nk}} $$&lt;/code&gt;
+This model be compactly represented using the graphical representation shown in the left figure below.&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/gQD80i2.png&quot; alt=&quot;drawing&quot; width=&quot;650&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Note in basic GMM, we did not place a prior over any model parameters (&lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi,\; \mu, \; \Sigma\;$&lt;/code&gt;), we instead use maximum likelihood (ML) to find ML estimates (MLE) of these parameters. We will show in the next section, MLE can easily lead to overfitting. To make a GMM Bayesian, all we do is to place priors over model parameters, i.e. let the mixing proportion &lt;code class=&quot;highlighter-rouge&quot;&gt;$\pi$&lt;/code&gt; (which is multinomial) be drawn from a symmetric Dirchlet distribution:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(\pi) = \text{Dir}(\pi|\alpha_0)$$&lt;/code&gt;
+the mean and precision of each Gaussian mixture are drawn from an independent Gaussian-Wishart prior (Wishart is the conjugate prior to precision matrices):
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(\mu, \Lambda)=p(\mu|\Lambda)p(\Lambda)=\prod_{k=1}^K \mathcal{N}(\mu_k|m_0, (\beta_0 \Lambda_k)^{-1})\mathcal{W} (\Lambda_k|W_0, v_0)$$&lt;/code&gt;
+where parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\alpha_0, \beta_0, m_0, v_0, W_0$&lt;/code&gt; govern the shape of prior distributions. Conditional distributions for &lt;code class=&quot;highlighter-rouge&quot;&gt;$z_n$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$x_n$&lt;/code&gt; are almost identical to one described by the GMM:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(z_n|\pi) = \prod_{k=1}^{K} \pi_{k}^{z_{n k}}$$&lt;/code&gt;
+and
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$ p(x_n|z_n,\mu, \Lambda) = \prod_{k=1}^{K} \mathcal{N}\left(x_{n} | \mu_{k} ,\Lambda_{k}^{-1}\right)^{z_{n k}}$$&lt;/code&gt;
+Right figure above shows the complete graphical representation of this Bayesian GMM model.&lt;/p&gt;
+
+&lt;p&gt;In order to formulate a VI treatment of this model, we explicitly write down the joint distribution over all random variables:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X, Z, \pi, \mu, \Lambda) = p(X|Z, \mu, \Lambda)p(Z|\pi)p(\pi)p(\mu|\Lambda)p(\Lambda)$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;32-implementation-and-results&quot;&gt;3.2 Implementation and Results&lt;/h2&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/26hk5pY.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/tN24Yck.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/YS03aiH.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
 </description>
         <pubDate>Tue, 16 Jun 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/vi1</link>
@@ -149,7 +184,7 @@ What about models where we do not know the true posterior? (i.e. most real-life 
     
       <item>
         <title>Expectation Maximisation Deep Dive</title>
-        <description>&lt;p class=&quot;lead&quot;&gt;(45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. &lt;strong&gt;No shying away from maths here, only proceed if you have a free afternoon.&lt;/strong&gt;&lt;/p&gt;
+        <description>&lt;p class=&quot;lead&quot;&gt;(45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch.&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
 &lt;ol&gt;
