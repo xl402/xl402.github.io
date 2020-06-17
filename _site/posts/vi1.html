@@ -282,33 +282,15 @@ where
 <p>It is worth noting the computational cost between GMM and Bayesian GMM, by inspecting the update equations above, there is nothing fundamentally different in Bayesian GMM (computationally speaking), the most expensive step are matrix inverts, which also manifests in GMM.
 <h2 id="32-implementation-and-results">3.2 Implementation and Results</h2>
 <p>For my sanity, unlike the GMM algorithm, I will not be implementing Bayesian GMM from scratch. Instead, <code class="highlighter-rouge">scikit-learn</code> has readily available <code class="highlighter-rouge">BayesianGaussianMixture</code> module that does all the hard work for us. Starting with the imports:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2</pre><td class="code"><pre><span class="kn">from</span> <span class="nn">sklearn.datasets.samples_generator</span> <span class="kn">import</span> <span class="n">make_blobs</span>
-<span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span><span class="p">,</span> <span class="n">BayesianGaussianMixture</span>
-</pre></table>
-</div>
-</div>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn.datasets.samples_generator</span> <span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span><span class="p">,</span> <span class="n">BayesianGaussianMixture</span></code></pre></figure>
 <p>where we use <code class="highlighter-rouge">make_blobs</code> function to generate our dataset:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4</pre><td class="code"><pre><span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="err">σ</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">3.</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="err">σ</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">3.</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">M</span><span class="p">,</span>
                   <span class="n">cluster_std</span><span class="o">=</span><span class="err">σ</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c"># reshape to simplify plotting indexing</span>
-</pre></table>
-</div>
-</div>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c"># reshape to simplify plotting indexing</span></code></pre></figure>
 <p>Both GMM and Bayesian GMM are implemnted and presented for comparision:
-<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
-2
-3
-4
-5
-6
-7
-8
-9</pre><td class="code"><pre><span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">gmm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
@@ -316,10 +298,7 @@ where
                                <span class="n">weight_concentration_prior_type</span><span class="o">=</span><span class="s">"dirichlet_distribution"</span><span class="p">,</span>
                                <span class="n">init_params</span><span class="o">=</span><span class="s">'random'</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">bgmm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-<span class="n">blabels</span> <span class="o">=</span> <span class="n">bgmm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-</pre></table>
-</div>
-</div>
+<span class="n">blabels</span> <span class="o">=</span> <span class="n">bgmm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code></pre></figure>
 <p>That’s it! Forget about the maths above. Figures below show the fitted model and posterior for cluster size equal to 3 (sorry about the notation, <code class="highlighter-rouge">$M$</code> in the plots means the same as <code class="highlighter-rouge">$K$</code>, i.e. number of clusters). We see both GMM and Bayesian GMM provide very good estimates.
 <center><img src="https://i.filmot.com/26hk5pY.png" alt="drawing" width="1000" /></center>
 <p>
