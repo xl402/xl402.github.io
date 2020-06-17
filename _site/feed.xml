@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 17 Jun 2020 13:34:16 +0100</pubDate>
-    <lastBuildDate>Wed, 17 Jun 2020 13:34:16 +0100</lastBuildDate>
+    <pubDate>Wed, 17 Jun 2020 15:57:02 +0100</pubDate>
+    <lastBuildDate>Wed, 17 Jun 2020 15:57:02 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -28,12 +28,12 @@ in words:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$\text{posterior} = \dfrac{\text{likelihood}\times\text{prior}}{\text{evidence}}$$&lt;/code&gt;
 following this equation, there are three steps involving developing a Bayesian inference model.&lt;/p&gt;
 &lt;ol&gt;
-  &lt;li&gt;Build a &lt;strong&gt;generative model&lt;/strong&gt;: choose prior and choose likelihood, i.e. how can our data be generated using a probabilistic model? (GMM for discovering mixtures, LDA for discovering topics)&lt;/li&gt;
-  &lt;li&gt;Compute posterior&lt;/li&gt;
-  &lt;li&gt;Report a summary, e.g. posterior means and (co)variances. i.e. inform your boss/client about the ‘insights’ provided by the model.&lt;/li&gt;
+  &lt;li&gt;Build a &lt;strong&gt;generative model&lt;/strong&gt;: choose prior and choose likelihood, i.e. how can our data be generated using a probabilistic model? (GMM for discovering mixtures, LDA for discovering topics). This step results in an easily evaluated joint distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X, \theta)$&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Compute posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt; (from what distribution do our parameters actually come from after observing the data? As suppose to our belief, i.e. prior distribution)&lt;/li&gt;
+  &lt;li&gt;Report a summary, e.g. posterior means and (co)variances. Inform your boss/client about the ‘insights’ provided by the model, i.e. “on average 30% of our data come from distribution A, with an uncertainty of ±5% etc.”&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Each of the three steps alone requires a separate blog post(s). We only focus on step 2, i.e. how do we compute the posterior? This is in fact a very hard problem because of the normalising &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X)$&lt;/code&gt; (evidence) term. The only way to evaluate it is to compute:
+&lt;p&gt;Each of the three steps alone requires a separate blog post(s). &lt;strong&gt;We only focus on step 2&lt;/strong&gt;, i.e. how do we compute the posterior? This is in fact a very hard problem because of the normalising &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X)$&lt;/code&gt; (evidence) term. The only way to evaluate it exactly is to compute:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X) = \int_\theta p(X|\theta)p(\theta)$$&lt;/code&gt;
 suppose in our model, our parameter space includes things like “cluster mean” &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_1, \cdots \mu_M$&lt;/code&gt;, “cluster variance” &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^2_1, \cdots \sigma^2_M$&lt;/code&gt;, etc, this integral over &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; becomes:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X) = \int_{\mu_1}\cdots \int_{\mu_M}\int_{\sigma^2_1}\cdots \int_{\sigma^2_M} p(X|\mu_1, \cdots \sigma^2_M)d\mu_1\cdots d\sigma^2_M$$&lt;/code&gt;&lt;/p&gt;
@@ -69,7 +69,7 @@ we know under KL measurement, if &lt;code class=&quot;highlighter-rouge&quot;&gt
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$\operatorname{KL}(q(\theta) \| p(\theta | X)) = \int_\theta q(\theta) \log \frac{q(\theta)}{p(\theta | X)} d \theta \quad [1]$$&lt;/code&gt;
 and re-write the posterior:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$\operatorname{KL}(\cdots)=\int_\theta q(\theta) \log \frac{q(\theta) p(X)}{p(\theta, X)} d \theta=\log p(X)-\int_\theta q(\theta) \log \frac{p(\theta, X)}{q(\theta)} d \theta \quad [2]$$&lt;/code&gt;
-and recall &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X)$&lt;/code&gt; term is intractable, but it does not depend on &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, hence to find the optimum &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; we completely avoided this intractable term! &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta, X)$&lt;/code&gt; can be evaluated easily since we needed it to construct our model in the first place (step one of the three procedures in the previous section).  Our objective function becomes:
+and recall &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X)$&lt;/code&gt; term is intractable, but it does not depend on &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, hence to find the optimum &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; we can completely avoid this intractable term! &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta, X)$&lt;/code&gt; can be evaluated easily since we needed it to construct our model in the first place (step one of the three procedures in the previous section).  Our objective function becomes:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$q^* = \operatorname{argmax}_{q \in Q}\int_\theta q(\theta) \log \frac{p(\theta, X)}{q(\theta)} d \theta$$&lt;/code&gt;
 (argmax because we are minimising the negative). This objective function is given the confusing name “Evidence lower bound” (ELBO), because if we look at equation &lt;code class=&quot;highlighter-rouge&quot;&gt;$[2]$&lt;/code&gt;, KL divergence is none-negative, the evidence term &lt;code class=&quot;highlighter-rouge&quot;&gt;$\log p(X)$&lt;/code&gt; is a constant, hence the remaining term is a lower bound on the evidence term.
 I find this ELBO objective more intuitive by expanding it fully:
@@ -91,9 +91,43 @@ in the cases where &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(x)$&lt;/co
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/GTYI3gm.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
-&lt;p&gt;where the blue line is the true posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, red lines are our variational approximations. So methods with &lt;code class=&quot;highlighter-rouge&quot;&gt;$q||p$&lt;/code&gt; tends to &lt;strong&gt;under estimate&lt;/strong&gt; the posterior variance, c.f. over estimation in &lt;code class=&quot;highlighter-rouge&quot;&gt;$p||q$&lt;/code&gt;. Both can be quiet bad if you think about the real-life impact (under estimating uncertainty in getting cancer and over estimating it). A lot of research is done on finding alternative methods/metrics, which of course is beyong the scope of this post.&lt;/p&gt;
+&lt;p&gt;where the blue line is the true posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, red lines are our variational approximations. So methods with &lt;code class=&quot;highlighter-rouge&quot;&gt;$q||p$&lt;/code&gt; tends to &lt;strong&gt;under estimate&lt;/strong&gt; the posterior variance, c.f. over estimation in &lt;code class=&quot;highlighter-rouge&quot;&gt;$p||q$&lt;/code&gt;. Both can be quiet bad if you think about the real-life impact (under estimating uncertainty in getting cancer and over estimating it). A lot of research is done on finding alternative methods/metrics, which of course is beyond the scope of this post.&lt;/p&gt;
 
 &lt;h3 id=&quot;22-mean-field-approximation&quot;&gt;2.2 Mean-Field Approximation&lt;/h3&gt;
+
+&lt;p&gt;Recall we wish to approximate the posterior using a family of &lt;em&gt;“nice”&lt;/em&gt; distributions &lt;code class=&quot;highlighter-rouge&quot;&gt;$Q$&lt;/code&gt;, one of the criteria is low dimensionality. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; contains all parameters in our model, hence it is typically high dimensional. What if we can instead fully factorise it:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$Q_{\text{MF}}:=\left\{q: q(\theta)=\prod_{j=1}^{J} q_{j}\left(\theta_{j}\right)\right\}$$&lt;/code&gt;
+so now we explicitly assume independence between parameters in our &lt;strong&gt;approximated distribution&lt;/strong&gt;. This gives us the form of mean-field (MF) variational inference. Note this is &lt;strong&gt;NOT&lt;/strong&gt; equivalent to assuming parameters are actually independent from one another.  &lt;strong&gt;Hence MF is not a modelling assumption&lt;/strong&gt;, rather an approximation assumption.
+This factorized form of variational inference corresponds to an approximation framework developed in physics called &lt;em&gt;mean field theory&lt;/em&gt;. Now we seek the distribution within the family &lt;code class=&quot;highlighter-rouge&quot;&gt;$Q_\text{MF}$&lt;/code&gt; for which ELBO is the largest, substitution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; into ELBO:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$ \text{ELBO} = \int_\theta \prod_j q_j(\theta_j) \left\{ \log p(X,\theta) - \sum_j \log q_j (\theta) \right\} d\theta$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;It can be shown (maths is quiet involved, so ignored here), that the general expression for the optimal solution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^*_k (\theta_k)$&lt;/code&gt; satisfies:&lt;/p&gt;
+
+&lt;p class=&quot;notice&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\log q_k^*(\theta_k) = \mathbb{E}_{\theta \sim q_{j\neq k}}[ \log p(X, \theta)] + \text{const.}\quad [3]$$&lt;/code&gt;
+which says that the log of the optimal solution for the factor &lt;code class=&quot;highlighter-rouge&quot;&gt;$q_k$&lt;/code&gt; is obtained by considering the log of the joint distribution and then taking the expectation with respect to all the other factors &lt;code class=&quot;highlighter-rouge&quot;&gt;$\{q_j\} \;\forall j\neq k$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;This means we can apply &lt;strong&gt;coordinate ascent&lt;/strong&gt; to obtain &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^*(\theta)$&lt;/code&gt; by iteratively setting each factor &lt;code class=&quot;highlighter-rouge&quot;&gt;$q_{k}\left(\theta_{k}\right)$&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^*_{k}\left(\theta_{k}\right)$&lt;/code&gt; according to equation [3]. The bad news is that - in order to do MF, you have to analytically derive each update steps (just like expectation maximisation for Gaussian Mixture Models), note in equation [3] the constant term is effectively the normalising denominator if you take exponent on both side to get the actual density function &lt;code class=&quot;highlighter-rouge&quot;&gt;$q_{k}^{*}\left(\theta_{k}\right)$&lt;/code&gt;. In practice, people just find &lt;code class=&quot;highlighter-rouge&quot;&gt;$q_{k}^{*}\left(\theta_{k}\right)$&lt;/code&gt; by inspection, after writing down the analytical form of [3].&lt;/p&gt;
+
+&lt;p&gt;Suppose we have gone through the trouble, deriving the update rule for each parameter in our model, and we obtain our final &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^*(\theta)$&lt;/code&gt;. One natural question to ask: how correct are we from the true posterior? &lt;a href=&quot;https://www.inference.org.uk/itprnn/book.pdf&quot;&gt;Mackay’s book&lt;/a&gt; introduces a very simple problem: given a set of one dimensional data points &lt;code class=&quot;highlighter-rouge&quot;&gt;$X = [x_0, \cdots x_N]$&lt;/code&gt;, we would like to model the distribution with a Gaussian and report it’s mean and variance.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;np&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;N&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;10.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;2.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;μ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;σ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;I mean … if you are sane, you would probably do maximum likelihood estimation and guess that &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_{\text{MLE}} = \bar{X}$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^2_{\text{MLE}} = \text{Var}[X]$&lt;/code&gt;. But what if we want to go Bayesian? Let’s place a Gamma prior on the precision of the normal distribution, and a normal prior on our mean:&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/3Y3vDVF.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Because we have used conjugate priors, we can actually get an analytical posterior via computing:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(\mu, \sigma |X) = \dfrac{p(X|\mu,\sigma)p(\mu, \sigma)}{p(X)}$$&lt;/code&gt;
+(the exact format is actually quiet involved). One can show that this definitely does not factorize, i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\mu, \sigma | X)\neq f_1(\mu)f_2(\sigma)$&lt;/code&gt;. For those who are insane, we can actually use mean-field approximation on this posterior (for which we know the analytical form), i.e. we will consider a factorised variational approximation to the posterior given by:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$q(\mu, \sigma) = q_\mu (\mu)q_\sigma (\sigma)$$&lt;/code&gt;
+one can painstakingly derive the update rules according to equation [3] and do coordinate descent to obtain:&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/ulKVOW2.png&quot; alt=&quot;drawing&quot; width=&quot;1000&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;in the figure above, green contours represent our true posterior, with x-axis representing posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu$&lt;/code&gt; and y-axis being posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^{-1}$&lt;/code&gt;. Blue lines are our variational mean-field approximation at each time-step. Red lines show our converged posterior approximation. As a sanity check this shows that MF provides a decent fit for our toy example (moments seem to match)!&lt;/p&gt;
 </description>
         <pubDate>Tue, 16 Jun 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/vi1</link>
