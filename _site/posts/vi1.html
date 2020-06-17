@@ -248,21 +248,89 @@ This model be compactly represented using the graphical representation shown in 
 <p>Note in basic GMM, we did not place a prior over any model parameters (<code class="highlighter-rouge">$\pi,\; \mu, \; \Sigma\;$</code>), we instead use maximum likelihood (ML) to find ML estimates (MLE) of these parameters. We will show in the next section, MLE can easily lead to overfitting. To make a GMM Bayesian, all we do is to place priors over model parameters, i.e. let the mixing proportion <code class="highlighter-rouge">$\pi$</code> (which is multinomial) be drawn from a symmetric Dirchlet distribution:
 <code class="highlighter-rouge">$$p(\pi) = \text{Dir}(\pi|\alpha_0)$$</code>
 the mean and precision of each Gaussian mixture are drawn from an independent Gaussian-Wishart prior (Wishart is the conjugate prior to precision matrices):
-<code class="highlighter-rouge">$$p(\mu, \Lambda)=p(\mu|\Lambda)p(\Lambda)=\prod_{k=1}^K \mathcal{N}(\mu_k|m_0, (\beta_0 \Lambda_k)^{-1})\mathcal{W} (\Lambda_k|W_0, v_0)$$</code>
-where parameters <code class="highlighter-rouge">$\alpha_0, \beta_0, m_0, v_0, W_0$</code> govern the shape of prior distributions. Conditional distributions for <code class="highlighter-rouge">$z_n$</code> and <code class="highlighter-rouge">$x_n$</code> are almost identical to one described by the GMM:
+<code class="highlighter-rouge">$$p(\mu, \Lambda)=p(\mu|\Lambda)p(\Lambda)=\prod_{k=1}^K \mathcal{N}(\mu_k|m_0, (\beta_0 \Lambda_k)^{-1})\mathcal{W} (\Lambda_k|W_0, \nu_0)$$</code>
+where parameters <code class="highlighter-rouge">$\alpha_0, \beta_0, m_0, \nu_0, W_0$</code> govern the shape of prior distributions. Conditional distributions for <code class="highlighter-rouge">$z_n$</code> and <code class="highlighter-rouge">$x_n$</code> are almost identical to one described by the GMM:
 <code class="highlighter-rouge">$$p(z_n|\pi) = \prod_{k=1}^{K} \pi_{k}^{z_{n k}}$$</code>
 and
 <code class="highlighter-rouge">$$ p(x_n|z_n,\mu, \Lambda) = \prod_{k=1}^{K} \mathcal{N}\left(x_{n} | \mu_{k} ,\Lambda_{k}^{-1}\right)^{z_{n k}}$$</code>
 Right figure above shows the complete graphical representation of this Bayesian GMM model.
 <p>In order to formulate a VI treatment of this model, we explicitly write down the joint distribution over all random variables:
-<code class="highlighter-rouge">$$p(X, Z, \pi, \mu, \Lambda) = p(X|Z, \mu, \Lambda)p(Z|\pi)p(\pi)p(\mu|\Lambda)p(\Lambda)$$</code>
+<code class="highlighter-rouge">$$p(X, Z, \pi, \mu, \Lambda) = p(X|Z, \mu, \Lambda)p(Z|\pi)p(\pi)p(\mu|\Lambda)p(\Lambda) \quad [4]$$</code>
+where <code class="highlighter-rouge">$X = \{x_0, \cdots x_N\}$</code> is our observed dataset and similarly <code class="highlighter-rouge">$Z = \{z_0, \cdots, z_N\}$</code>.
+<p>We wish to obtain the posterior distribution:
+<code class="highlighter-rouge">$$p(Z, \pi, \mu, \Lambda|X)$$</code> which is intractable. Instead, consider a variational distribution which factorises between the latent variables and the parameters so that:
+<code class="highlighter-rouge">$$q(Z, \pi, \mu, \Lambda) = q(Z) q(\pi, \mu ,\Lambda)$$</code>
+this follows the mean-field approach to VI, turns out, this is the only assumption we need to make to obtain a tractable solution to our Bayesian mixture model! Following the mean-field framework (equation [3]), to update the factor <code class="highlighter-rouge">$q(Z)$</code>, set
+<code class="highlighter-rouge">$$\log q^{\star}(Z)=\mathbb{E}_{\pi, \mu, \Lambda}[\log p({X}, {Z}, \pi, \mu, \Lambda)]+\mathrm{const.}$$</code>
+the exact form of <code class="highlighter-rouge">$q^*(Z)$</code> requires quiet a lot of maths, but essentially we just substitute the joint density term (equation [4]) in and take expectations w.r.t. the parameters. Jumping to the solution:
+<code class="highlighter-rouge">$$q^{\star}(\mathbf{Z})=\prod_{n=1}^{N} \prod_{k=1}^{K} r_{n k}^{z_{n k}}$$</code>
+where <code class="highlighter-rouge">$r_{n k} \propto \pi_{k}\left|\boldsymbol{\Lambda}_{k}\right|^{1 / 2} \exp \left\{-\frac{1}{2}\left(\mathbf{x}_{n}-\boldsymbol{\mu}_{k}\right)^{\mathrm{T}} \boldsymbol{\Lambda}_{k}\left(\mathbf{x}_{n}-\boldsymbol{\mu}_{k}\right)\right\}$</code> is quiet intuitive, i.e. it is the “responsibility” term (almost identical to the GMM model), that indicates the contribution from each cluster towards our observed data points.
+Next, we obtain the variational posterior for <code class="highlighter-rouge">$\pi, \mu, \Lambda$</code>:
+<code class="highlighter-rouge">$$\ln q^{\star}({\pi}, {\mu}, {\Lambda}) = \mathbb{E}_Z[\log p(X, Z, \pi, \mu, \Lambda)]+\text { const. }$$</code>
+it can be shown that:
+<code class="highlighter-rouge">$$q^{\star}({\pi})=\operatorname{Dir}({\pi} | {\alpha}), \quad \alpha_k = \alpha_0+N_k \quad [5]$$</code>
+and
+<code class="highlighter-rouge">$$q^{\star}\left({\mu}_{k}, {\Lambda}_{k}\right)=\mathcal{N}\left({\mu}_{k} | {m}_{k},\left(\beta_{k} {\Lambda}_{k}\right)^{-1}\right) \mathcal{W}\left({\Lambda}_{k} | {W}_{k}, \nu_{k}\right) \quad [6]$$</code>
+where
+<p><code class="highlighter-rouge">$$ N_{k}=\sum_{n=1}^{N} r_{n k}, \quad\quad \bar{x}_{k}=\frac{1}{N_{k}} \sum_{n=1}^{N} r_{n k} {x}_{n}, \quad\quad {S}_{k}=\frac{1}{N_{k}} \sum_{n=1}^{N} r_{n k}\left({x}_{n}-\bar{x}_{k}\right)\left({x}_{n}-\overline{x}_{k}\right)^{\mathrm{T}}$$</code>
+<p>define the “pseudo count”, “cluster mean” and “cluster variance respectively”;
+<p><code class="highlighter-rouge">$$\beta_{k}=\beta_{0}+N_{k}$$</code>
+<code class="highlighter-rouge">$${m}_{k}=\frac{1}{\beta_{k}}\left(\beta_{0} {m}_{0}+N_{k} \overline{x}_{k}\right)$$</code>
+<code class="highlighter-rouge">$${W}_{k}^{-1}={W}_{0}^{-1}+N_{k} {S}_{k}+\frac{\beta_{0} N_{k}}{\beta_{0}+N_{k}}\left(\overline{x}_{k}-{m}_{0}\right)\left(\overline{x}_{k}-{m}_{0}\right)^{\mathrm{T}}$$</code>
+<code class="highlighter-rouge">$$\nu_{k}=\nu_{0}+N_{k}$$</code>
+<p>are used to parameterise the VI posterior Gaussian clusters <code class="highlighter-rouge">$q^{\star}\left(\mu_{k}, \Lambda_{k}\right)$</code>. We should not be too daunted by the form of our VI posterior. We see the form of both [5] and [6] makes sense, since our priors were Dirchlet and Gaussian-Wishart, and our VI posterior ended up being the same kind of distributions. We also see that the VI posteriors are parameterised by both prior parameters like <code class="highlighter-rouge">$\alpha_0, \beta_0, W_0$</code> and <code class="highlighter-rouge">$\nu_0$</code> and taking into account of observed data.
+<p>It is worth noting the computational cost between GMM and Bayesian GMM, by inspecting the update equations above, there is nothing fundamentally different in Bayesian GMM (computationally speaking), the most expensive step are matrix inverts, which also manifests in GMM.
 <h2 id="32-implementation-and-results">3.2 Implementation and Results</h2>
+<p>For my sanity, unlike the GMM algorithm, I will not be implementing Bayesian GMM from scratch. Instead, <code class="highlighter-rouge">scikit-learn</code> has readily available <code class="highlighter-rouge">BayesianGaussianMixture</code> module that does all the hard work for us. Starting with the imports:
+<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre><td class="code"><pre><span class="kn">from</span> <span class="nn">sklearn.datasets.samples_generator</span> <span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span><span class="p">,</span> <span class="n">BayesianGaussianMixture</span>
+</pre></table>
+</div>
+</div>
+<p>where we use <code class="highlighter-rouge">make_blobs</code> function to generate our dataset:
+<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre><td class="code"><pre><span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="err">σ</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">3.</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="n">M</span><span class="p">,</span>
+                  <span class="n">cluster_std</span><span class="o">=</span><span class="err">σ</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c"># reshape to simplify plotting indexing</span>
+</pre></table>
+</div>
+</div>
+<p>Both GMM and Bayesian GMM are implemnted and presented for comparision:
+<div class="language-python highlighter-rouge"><div class="highlight"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9</pre><td class="code"><pre><span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">gmm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">bgmm</span> <span class="o">=</span> <span class="n">BayesianGaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                               <span class="n">weight_concentration_prior_type</span><span class="o">=</span><span class="s">"dirichlet_distribution"</span><span class="p">,</span>
+                               <span class="n">init_params</span><span class="o">=</span><span class="s">'random'</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">bgmm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">blabels</span> <span class="o">=</span> <span class="n">bgmm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></table>
+</div>
+</div>
+<p>That’s it! Forget about the maths above. Figures below show the fitted model and posterior for cluster size equal to 3 (sorry about the notation, <code class="highlighter-rouge">$M$</code> in the plots means the same as <code class="highlighter-rouge">$K$</code>, i.e. number of clusters). We see both GMM and Bayesian GMM provide very good estimates.
 <center><img src="https://i.filmot.com/26hk5pY.png" alt="drawing" width="1000" /></center>
 <p>
+<p>The power of Bayesian GMM is observed when <strong>you do not know how many clusters there are</strong>, which is a very common thing to high dimensional, unknown dataset. Let’s set number of clusters to be equal to 20. Figures below show that GMM completely overfits the dataset, whereas Bayesian GMM is not fooled!
 <center><img src="https://i.filmot.com/tN24Yck.png" alt="drawing" width="800" /></center>
 <p>
+<p>Indeed, if we plot out the posterior mixing proportions, we see GMM places almost uniform proportion across all clusters, whereas Bayesian GMM has managed to identify that there are only three clusters!
 <center><img src="https://i.filmot.com/YS03aiH.png" alt="drawing" width="1000" /></center>
 <p>
+<p>Of course, one can argue that through cross-validation, we can tune the optimum number of clusters for GMM. But a) Bayesian GMM has the same computational cost as GMM and b) We can obtain uncertainty in posterior parameters which is an added bonus! So in short, Bayesian GMM beats GMM :)
+<p>An obvious downside of the mean-field approach is the maths one needs to go through (we have in fact omitted 90% of the actual derivation), another issue lies in scalability. Part 2 of the post will cover the concept of black-box inference.
 </article>
 <aside class="related">
 <h2>Related posts</h2>
