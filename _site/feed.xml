@@ -6,24 +6,92 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 16 Jun 2020 14:00:11 +0100</pubDate>
-    <lastBuildDate>Tue, 16 Jun 2020 14:00:11 +0100</lastBuildDate>
+    <pubDate>Wed, 17 Jun 2020 01:22:07 +0100</pubDate>
+    <lastBuildDate>Wed, 17 Jun 2020 01:22:07 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
-        <title>Expectation Maximisation Deep Dive</title>
-        <description>&lt;p class=&quot;lead&quot;&gt;(&lt;code class=&quot;highlighter-rouge&quot;&gt;$\approx$&lt;/code&gt; 45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. &lt;strong&gt;No shying away from maths here, only proceed if you have a free afternoon.&lt;/strong&gt;&lt;/p&gt;
+        <title>Variational Inference Part 1</title>
+        <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Part 1 of 2 series on variational inference. This part first introduces high-level concept and the mean-field approximation. We then demonstrate the mean-field theory on a Bayesian Gaussian Mixture Model (Bayesian GMM).&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
+&lt;p&gt;Bayesian inference offers an attractive story with principled uncertainty estimation and the ability to combine expert knowledge into the model. For reasons that will hopefully become clear later, the challenge in Bayesian inference is to be able to provide both fast and scalable products during both development and serving. In this post, I will summarise what variational inference is trying to solve, it’s benefits and potential pitfalls. I will then introduce the mean-field method, and use it to solve a Bayesian Gaussian Mixture Model. In the second post, I will elaborate on black-box variational inference methods.&lt;/p&gt;
+
+&lt;p&gt;VI is an advanced topic, so intermediate-level probability theory and ML knowledge are assumed. Knowledge of the &lt;a href=&quot;https://www.youtube.com/watch?v=ErfnhcEV1O8&quot;&gt;&lt;em&gt;Kullback–Leibler&lt;/em&gt;&lt;/a&gt; (KL) divergence is also expected. To better understand Bayesian GMM (which will be maths heavy), I would like to recommend my previous post on &lt;a href=&quot;https://xl402.github.io/posts/em&quot;&gt;Expectation Maximisation&lt;/a&gt; and &lt;a href=&quot;https://www.youtube.com/watch?v=REypj2sy_5U&amp;amp;t=329s&quot;&gt;this&lt;/a&gt; video for intuition. Let’s dive in!&lt;/p&gt;
+
+&lt;h2 id=&quot;2-theory-of-vi&quot;&gt;2. Theory of VI&lt;/h2&gt;
+&lt;h3 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h3&gt;
+&lt;p&gt;Let’s start with the classic bayesian inference equation:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(\theta|X) = \dfrac{p(X|\theta)p(\theta)}{p(X)}$$&lt;/code&gt;
+in words:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\text{posterior} = \dfrac{\text{likelihood}\times\text{prior}}{\text{evidence}}$$&lt;/code&gt;
+following this equation, there are three steps involving developing a Bayesian inference model.&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Build a &lt;strong&gt;generative model&lt;/strong&gt;: choose prior and choose likelihood, i.e. how can our data be generated using a probabilistic model? (GMM for discovering mixtures, LDA for discovering topics)&lt;/li&gt;
+  &lt;li&gt;Compute posterior&lt;/li&gt;
+  &lt;li&gt;Report a summary, e.g. posterior means and (co)variances. i.e. inform your boss/client about the ‘insights’ provided by the model.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Each of the three steps alone requires a separate blog post(s). We only focus on step 2, i.e. how do we compute the posterior? This is in fact a very hard problem because of the normalising &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X)$&lt;/code&gt; (evidence) term. The only way to evaluate it is to compute:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X) = \int_\theta p(X|\theta)p(\theta)$$&lt;/code&gt;
+suppose in our model, our parameter space includes things like “cluster mean” &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mu_1, \cdots \mu_M$&lt;/code&gt;, “cluster variance” &lt;code class=&quot;highlighter-rouge&quot;&gt;$\sigma^2_1, \cdots \sigma^2_M$&lt;/code&gt;, etc, this integral over &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; becomes:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X) = \int_{\mu_1}\cdots \int_{\mu_M}\int_{\sigma^2_1}\cdots \int_{\sigma^2_M} p(X|\mu_1, \cdots \sigma^2_M)d\mu_1\cdots d\sigma^2_M$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;not really looking pretty… since we are integrating over some pretty complicated, high dimensional function over a high dimensional space. As with a lot of real life problems, this integration typically has no closed form, and it will be extremely inefficient to use numerical integration tools due to the high dimensionality.
+The gold standard approach to obtain the posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt; is to use Markov Chain Monte Carlo (MCMC), which deserves a separate blog post. But in short MCMC provides an unbiased estimate of the posterior, i.e. if you run it for long enough, you are guaranteed to become arbitrarily close to the posterior. But we run into the same problem of “running it for long enough”, turns out, for large dataset and parameters, “long enough” is “too long to be acceptable for development/production”. What would be a &lt;strong&gt;fast&lt;/strong&gt; and &lt;strong&gt;reliable&lt;/strong&gt; (good enough approximate) of the posterior? Here comes variational inference!&lt;/p&gt;
+
+&lt;h3 id=&quot;21-vi-overview&quot;&gt;2.1 VI Overview&lt;/h3&gt;
+&lt;p&gt;Essentially, variational inference turns the &lt;em&gt;numerical integral&lt;/em&gt; problem into an &lt;em&gt;optimisation&lt;/em&gt; problem. Remember what we want to obtain is the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, which can be pretty complicated looking (we in fact don’t normally know what it looks like). In VI, we try to approximate this distribution with a &lt;em&gt;nice&lt;/em&gt; distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; (more on &lt;em&gt;“nice”&lt;/em&gt; later, for now, picture Gaussian). Graphically speaking, left figure below shows what we might want to achieve:&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/umR5NCD.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;To think about this in terms of optimisation: the posterior distribution lives in some complicated space, we wish to find the optimum distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q^*(\theta)$&lt;/code&gt; which is &lt;em&gt;closest&lt;/em&gt; to the posterior, and come from a family of &lt;em&gt;“nice”&lt;/em&gt; distribution (pictorially shown on the right). i.e.
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$q^* = \arg\min_{q\in Q}c(q(\theta), p(\theta|X))$$&lt;/code&gt;
+with &lt;code class=&quot;highlighter-rouge&quot;&gt;$c$&lt;/code&gt; being the “closeness” function. Two things we need to further define - what is &lt;em&gt;“nice”&lt;/em&gt; and what is &lt;em&gt;“close”&lt;/em&gt;?&lt;/p&gt;
+</description>
+        <pubDate>Tue, 16 Jun 2020 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/posts/vi1</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/vi1</guid>
+        
+        <category>theory</category>
+        
+        <category>bayesian</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Expectation Maximisation Deep Dive</title>
+        <description>&lt;p class=&quot;lead&quot;&gt;(45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. &lt;strong&gt;No shying away from maths here, only proceed if you have a free afternoon.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#theory-of-em&quot;&gt;Theory of EM&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;2.1 &lt;a href=&quot;#what-is-it-trying-to-solve?&quot;&gt;What is it trying to solve?&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;2.2 &lt;a href=&quot;#2.2&quot;&gt;Graphical representation of the solution&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;2.3 &lt;a href=&quot;#2.3&quot;&gt;Detailed derivation&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#3&quot;&gt;EM in Practice: Gaussian Mixture Model&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;3.1 &lt;a href=&quot;#3.1&quot;&gt;Derivation&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;3.2 &lt;a href=&quot;#3.2&quot;&gt;Implementation&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;1-introduction-&quot;&gt;1. Introduction &lt;a name=&quot;introduction&quot;&gt;&lt;/a&gt;&lt;/h1&gt;
 &lt;p&gt;Expectation maximisation (EM) is one of those things that I was taught several times at University, each time it was explained slightly differently, and I was confused by it every single time. The confusion is mostly because we never implemented any of the EM algorithms through Python, and EMs were always introduced to solve a &lt;strong&gt;specific&lt;/strong&gt; problem.&lt;/p&gt;
 
 &lt;p&gt;Without a doubt, EM serves as a foundation for understanding variational inference. Here, I will try to go in-depth and derive and &lt;em&gt;E&lt;/em&gt; and &lt;em&gt;M&lt;/em&gt; steps under a &lt;strong&gt;general&lt;/strong&gt; framework. Later I will derive and implement a &lt;em&gt;Gaussian Mixture Model&lt;/em&gt; using EM.&lt;/p&gt;
 
 &lt;p&gt;Maths behind this post are based on Coursera’s &lt;a href=&quot;https://www.coursera.org/learn/bayesian-methods-in-machine-learning&quot;&gt;&lt;em&gt;Bayesian Methods for Machine Learning&lt;/em&gt;&lt;/a&gt; specialisation course. Intermediate-level probability theory and ML knowledge are assumed. Knowledge of the &lt;a href=&quot;https://www.youtube.com/watch?v=ErfnhcEV1O8&quot;&gt;&lt;em&gt;Kullback–Leibler&lt;/em&gt;&lt;/a&gt; (KL) divergence and &lt;a href=&quot;https://www.youtube.com/watch?v=HfCb1K4Nr8M&quot;&gt;&lt;em&gt;Jensen’s inequality&lt;/em&gt;&lt;/a&gt;  are also expected (link to videos explaining the concepts).&lt;/p&gt;
 
-&lt;h1 id=&quot;2-theory-of-em&quot;&gt;2. Theory of EM&lt;/h1&gt;
-&lt;h2 id=&quot;21-what-is-it-trying-to-solve&quot;&gt;2.1 What is it trying to solve?&lt;/h2&gt;
+&lt;h1 id=&quot;2-theory-of-em-&quot;&gt;2. Theory of EM &lt;a name=&quot;theory-of-em&quot;&gt;&lt;/a&gt;&lt;/h1&gt;
+&lt;h2 id=&quot;21-what-is-it-trying-to-solve-&quot;&gt;2.1 What is it trying to solve? &lt;a name=&quot;what-is-it-trying-to-solve?&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;EM aims to tackle a family of models termed &lt;strong&gt;latent variable models&lt;/strong&gt; (examples like GMM, LDA, etc). Their graphical representation can be compactly represented as:&lt;/p&gt;
 
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/U6RLrrJ.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
@@ -61,7 +129,7 @@ $$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;Of course, one question is why can’t we directly differentiate the (log) likelihood? As we will see later with GMM, we cannot obtain an analytical equation for &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; via direct differentiation!&lt;/p&gt;
 
-&lt;h2 id=&quot;22-graphical-representation-of-the-solution&quot;&gt;2.2 Graphical representation of the solution&lt;/h2&gt;
+&lt;h2 id=&quot;22-graphical-representation-of-the-solution-&quot;&gt;2.2 Graphical representation of the solution &lt;a name=&quot;2.2&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
 
 &lt;p&gt;Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.&lt;/p&gt;
 
@@ -88,7 +156,7 @@ $$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own &lt;strong&gt;variational distribution&lt;/strong&gt; which is a simple function. At each timestep, we approximate or set this function to the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(Z|X,\theta)$&lt;/code&gt; (&lt;strong&gt;E&lt;/strong&gt;-step), and we maximises the likelihood of our data-points under this function instead (&lt;strong&gt;M&lt;/strong&gt;-step). Alternating these two procedures, we are guaranteed to reach a &lt;strong&gt;local optima&lt;/strong&gt; (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).&lt;/p&gt;
 
-&lt;h2 id=&quot;23-detailed-derivation&quot;&gt;2.3 Detailed Derivation&lt;/h2&gt;
+&lt;h2 id=&quot;23-detailed-derivation-&quot;&gt;2.3 Detailed Derivation &lt;a name=&quot;2.3&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
 &lt;h3 id=&quot;e-step&quot;&gt;E-Step&lt;/h3&gt;
 
 &lt;p class=&quot;notice&quot;&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;highlighter-rouge&quot;&gt;$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$&lt;/code&gt;, to minimise the gap between our lower-bound and the likelihood under current parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;, set our variational distribution to be the posterior.&lt;/p&gt;
@@ -171,11 +239,11 @@ So the &lt;strong&gt;M&lt;/strong&gt;-step is simply maximising the joint distri
 $$&lt;/code&gt;
 Again, we definitely know what &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(X, Z | \theta)$&lt;/code&gt; is, since we needed it to set up our graphical model. However, maximisation w.r.t. &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt;.&lt;/p&gt;
 
-&lt;h1 id=&quot;3-em-in-practice-gaussian-mixture-model&quot;&gt;3. EM in Practice: Gaussian Mixture Model&lt;/h1&gt;
+&lt;h1 id=&quot;3-em-in-practice-gaussian-mixture-model-&quot;&gt;3. EM in Practice: Gaussian Mixture Model &lt;a name=&quot;3&quot;&gt;&lt;/a&gt;&lt;/h1&gt;
 
-&lt;p&gt;Here we unleash the EM algorithm on Gaussian Mixture Model (GMM), For a quick intuition on how GMM update rules work, here is a link to &lt;a href=&quot;https://www.youtube.com/watch?v=XepXtl9YKwc&amp;amp;t=242s&quot;&gt;&lt;em&gt;StatQuest’s&lt;/em&gt;&lt;/a&gt; video. I have to say, update rule for GMM is fairly intuitive, and videos like this is a tiny bit misleading. As it is not easy to shoehorn the general EM algorithm into this sort of intuition. Instead, we will not skip (too much) on the maths and will derive exactly how GMM update rules arise from EM.&lt;/p&gt;
+&lt;p&gt;Here we unleash the EM algorithm on Gaussian Mixture Model (GMM), For a quick intuition on how GMM update rules work, here is a link to &lt;a href=&quot;https://www.youtube.com/watch?v=REypj2sy_5U&amp;amp;t=329s&quot;&gt;&lt;em&gt;StatQuest’s&lt;/em&gt;&lt;/a&gt; video. I have to say, update rule for GMM is fairly intuitive, and videos like this is a tiny bit misleading. As it is not easy to shoehorn the general EM algorithm into this sort of intuition. Instead, we will not skip (too much) on the maths and will derive exactly how GMM update rules arise from EM.&lt;/p&gt;
 
-&lt;h2 id=&quot;31-derivation&quot;&gt;3.1 Derivation&lt;/h2&gt;
+&lt;h2 id=&quot;31-derivation-&quot;&gt;3.1 Derivation &lt;a name=&quot;3.1&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
 &lt;h3 id=&quot;model-definition&quot;&gt;Model Definition&lt;/h3&gt;
 
 &lt;p&gt;Remember the graph earlier?&lt;/p&gt;
@@ -255,7 +323,7 @@ To get optimum mixing proportions &lt;code class=&quot;highlighter-rouge&quot;&g
 \pi_k = \dfrac{\sum_i q(z_i=k)}{N}
 $$&lt;/code&gt;
 where &lt;code class=&quot;highlighter-rouge&quot;&gt;$N$&lt;/code&gt; is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to &lt;strong&gt;re-estimate model parameters with our ‘self-labelled’ data points&lt;/strong&gt; (labelled by our own variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to &lt;strong&gt;maximise likelihood of data points under our model&lt;/strong&gt;.&lt;/p&gt;
-&lt;h2 id=&quot;32-implementation&quot;&gt;3.2 Implementation&lt;/h2&gt;
+&lt;h2 id=&quot;32-implementation-&quot;&gt;3.2 Implementation &lt;a name=&quot;3.2&quot;&gt;&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Of course, any sane person would call &lt;code class=&quot;highlighter-rouge&quot;&gt;sklearn.mixture.GaussianMixture&lt;/code&gt; and just do &lt;code class=&quot;highlighter-rouge&quot;&gt;GMM.fit(X)&lt;/code&gt;. But that is way too efficient. We start with some standard import:&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;np&lt;/span&gt;

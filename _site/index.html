@@ -71,6 +71,79 @@
 </header>
 <article class="blog">
 <style>
+  .vi1 {
+    margin-bottom: 2em;
+  }
+  .vi1::before {
+    background-image: url('https://filmot.com/bCo5hZo.jpg');
+    background-size: cover;
+    -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -2;
+  }
+  .vi1::after {
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(100,0,255,0.8);
+    /*mix-blend-mode: darken;
+    mix-blend-mode: color-burn;
+    mix-blend-mode: hard-light;*/
+    mix-blend-mode: overlay;
+    z-index: -1;
+  }
+  .vi1-container,
+  .vi1-container::before,
+  .vi1-container::after {
+    height: 25rem;
+  }
+  .vi1-bleed-container,
+  .vi1-bleed-container::before,
+  .vi1-bleed-container::after {
+    height: 35rem;
+  }
+    @media (max-width: 48rem) {
+        .vi1-container,
+        .vi1-container::before,
+        .vi1-container::after{
+            height: 20rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+ <div class="
+    post-title-container
+        vi1 vi1-container hero-hov
+  ">
+   <div class="heading-container hero-heading hero-heading-blog">
+     <h1>
+          <a href="/posts/vi1" title="Variational Inference Part 1">Variational Inference Part 1</a>
+     </h1>
+     <div class="
+        post-meta
+      ">
+        <span>16/06/2020</span>
+        <span>
+              <a href="/tag/theory">#theory</a>
+              <a href="/tag/bayesian">#bayesian</a>
+        </span>
+     </div>
+   </div>
+ </div>
+     <p class="lead">(30 min) Part 1 of 2 series on variational inference. This part first introduces high-level concept and the mean-field approximation. We then demonstrate the mean-field theory on a Bayesian Gaussian Mixture Model (Bayesian GMM).
+       <div class="readmore">
+          <a href="/posts/vi1" role="button">Read more</a>
+       <div>
+</article>
+ <hr>
+<article class="blog">
+<style>
   .em {
     margin-bottom: 2em;
   }
@@ -136,7 +209,7 @@
      </div>
    </div>
  </div>
-     <p class="lead">(<code class="highlighter-rouge">$\approx$</code> 45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. <strong>No shying away from maths here, only proceed if you have a free afternoon.</strong>
+     <p class="lead">(45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. <strong>No shying away from maths here, only proceed if you have a free afternoon.</strong>
        <div class="readmore">
           <a href="/posts/em" role="button">Read more</a>
        <div>

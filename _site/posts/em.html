@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#ffffff">
 <title>Expectation Maximisation Deep Dive &#9642; Lu Blog</title>
 <!--
-<meta name="description" content="($\approx$ 45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. No shying away from maths here, only proceed if you have a free afternoon.
+<meta name="description" content="(45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. No shying away from maths here, only proceed if you have a free afternoon.
 ">
 -->
 <meta name="description" content="© 2020. Powered by Jekyll & Dactl
@@ -138,14 +138,28 @@
      </div>
    </div>
  </div>
-   <p class="lead">(<code class="highlighter-rouge">$\approx$</code> 45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. <strong>No shying away from maths here, only proceed if you have a free afternoon.</strong>
+   <p class="lead">(45min) This post covers the in-depth theory regarding the EM algorithm, with python implementation for a Gaussian Mixture Model from scratch. <strong>No shying away from maths here, only proceed if you have a free afternoon.</strong>
 <p>
-<h1 id="1-introduction">1. Introduction</h1>
+<ol>
+ <li><a href="#introduction">Introduction</a>
+ <li><a href="#theory-of-em">Theory of EM</a>
+   <ul>
+     <li>2.1 <a href="#what-is-it-trying-to-solve?">What is it trying to solve?</a>
+     <li>2.2 <a href="#2.2">Graphical representation of the solution</a>
+     <li>2.3 <a href="#2.3">Detailed derivation</a>
+   </ul>
+ <li><a href="#3">EM in Practice: Gaussian Mixture Model</a>
+   <ul>
+     <li>3.1 <a href="#3.1">Derivation</a>
+     <li>3.2 <a href="#3.2">Implementation</a>
+   </ul>
+</ol>
+<h1 id="1-introduction-">1. Introduction <a name="introduction"></a></h1>
 <p>Expectation maximisation (EM) is one of those things that I was taught several times at University, each time it was explained slightly differently, and I was confused by it every single time. The confusion is mostly because we never implemented any of the EM algorithms through Python, and EMs were always introduced to solve a <strong>specific</strong> problem.
 <p>Without a doubt, EM serves as a foundation for understanding variational inference. Here, I will try to go in-depth and derive and <em>E</em> and <em>M</em> steps under a <strong>general</strong> framework. Later I will derive and implement a <em>Gaussian Mixture Model</em> using EM.
 <p>Maths behind this post are based on Coursera’s <a href="https://www.coursera.org/learn/bayesian-methods-in-machine-learning"><em>Bayesian Methods for Machine Learning</em></a> specialisation course. Intermediate-level probability theory and ML knowledge are assumed. Knowledge of the <a href="https://www.youtube.com/watch?v=ErfnhcEV1O8"><em>Kullback–Leibler</em></a> (KL) divergence and <a href="https://www.youtube.com/watch?v=HfCb1K4Nr8M"><em>Jensen’s inequality</em></a>  are also expected (link to videos explaining the concepts).
-<h1 id="2-theory-of-em">2. Theory of EM</h1>
-<h2 id="21-what-is-it-trying-to-solve">2.1 What is it trying to solve?</h2>
+<h1 id="2-theory-of-em-">2. Theory of EM <a name="theory-of-em"></a></h1>
+<h2 id="21-what-is-it-trying-to-solve-">2.1 What is it trying to solve? <a name="what-is-it-trying-to-solve?"></a></h2>
 <p>EM aims to tackle a family of models termed <strong>latent variable models</strong> (examples like GMM, LDA, etc). Their graphical representation can be compactly represented as:
 <center><img src="https://i.filmot.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
 <p>
@@ -176,7 +190,7 @@ where for simplicity, we assume <strong>discrete distribution</strong> for <code
 \max _{\theta} p(X | \theta) = \max _{\theta} \sum_{i} \log \left(\sum_{c} p\left(x_{i}, z_{i}=c | \theta\right)\right)
 $$</code>
 <p>Of course, one question is why can’t we directly differentiate the (log) likelihood? As we will see later with GMM, we cannot obtain an analytical equation for <code class="highlighter-rouge">$\theta$</code> via direct differentiation!
-<h2 id="22-graphical-representation-of-the-solution">2.2 Graphical representation of the solution</h2>
+<h2 id="22-graphical-representation-of-the-solution-">2.2 Graphical representation of the solution <a name="2.2"></a></h2>
 <p>Here we jump straight into the solution of EM and obtain a graphical representation of the iterative update rule.
 <p>We wish to find a set of parameters <code class="highlighter-rouge">$\theta$</code> which maximises the likelihood <code class="highlighter-rouge">$\log(p(X|\theta))$</code>. This distribution can be arbitrarily complex, therefore at each timestep, we approximate this likelihood using a simpler distribution that forms a <em>lower bound</em> <code class="highlighter-rouge">$\mathcal{L}(q, \theta)$</code>, which is <strong>below the likelihood</strong> at all <code class="highlighter-rouge">$\theta$</code> values. At timestep <code class="highlighter-rouge">$k$</code>, the EM update rule are as follows:
 <ul>
@@ -195,7 +209,7 @@ $$</code>
 </div>
 <p>
 <p>Hence EM algorithm boils down to the fact that we cannot directly maximise our likelihood function, hence we maximise its lower-bound under our own <strong>variational distribution</strong> which is a simple function. At each timestep, we approximate or set this function to the posterior distribution <code class="highlighter-rouge">$p(Z|X,\theta)$</code> (<strong>E</strong>-step), and we maximises the likelihood of our data-points under this function instead (<strong>M</strong>-step). Alternating these two procedures, we are guaranteed to reach a <strong>local optima</strong> (in the picture above, depending on initialisation, we could have easily ended up on the left peak as our final solution).
-<h2 id="23-detailed-derivation">2.3 Detailed Derivation</h2>
+<h2 id="23-detailed-derivation-">2.3 Detailed Derivation <a name="2.3"></a></h2>
 <h3 id="e-step">E-Step</h3>
 <p class="notice"><strong>TL;DR</strong>: <code class="highlighter-rouge">$\;\arg\max _{q\left(z_{i}\right)} \mathcal{L}\left(\theta, q\right)=p\left(z_{i} | x_{i}, \theta\right)$</code>, to minimise the gap between our lower-bound and the likelihood under current parameters <code class="highlighter-rouge">$\theta$</code>, set our variational distribution to be the posterior.
 <p><strong>Proof</strong>: first, lets define how exactly a lower-bound arises and where on earth this <strong>variational distribution</strong> <code class="highlighter-rouge">$q$</code> comes from. Decompose the likelihood:
@@ -274,9 +288,9 @@ So the <strong>M</strong>-step is simply maximising the joint distribution betwe
 \hat{\theta} = \arg \max _{\theta}\mathbb{E}_{Z \sim q}[\log p(X, Z | \theta)]
 $$</code>
 Again, we definitely know what <code class="highlighter-rouge">$p(X, Z | \theta)$</code> is, since we needed it to set up our graphical model. However, maximisation w.r.t. <code class="highlighter-rouge">$\theta$</code> can be non-trivial. In the case of GMM, with a lot of maths, we can obtain closed form solutions for model parameters <code class="highlighter-rouge">$\theta$</code>.
-<h1 id="3-em-in-practice-gaussian-mixture-model">3. EM in Practice: Gaussian Mixture Model</h1>
-<p>Here we unleash the EM algorithm on Gaussian Mixture Model (GMM), For a quick intuition on how GMM update rules work, here is a link to <a href="https://www.youtube.com/watch?v=XepXtl9YKwc&amp;t=242s"><em>StatQuest’s</em></a> video. I have to say, update rule for GMM is fairly intuitive, and videos like this is a tiny bit misleading. As it is not easy to shoehorn the general EM algorithm into this sort of intuition. Instead, we will not skip (too much) on the maths and will derive exactly how GMM update rules arise from EM.
-<h2 id="31-derivation">3.1 Derivation</h2>
+<h1 id="3-em-in-practice-gaussian-mixture-model-">3. EM in Practice: Gaussian Mixture Model <a name="3"></a></h1>
+<p>Here we unleash the EM algorithm on Gaussian Mixture Model (GMM), For a quick intuition on how GMM update rules work, here is a link to <a href="https://www.youtube.com/watch?v=REypj2sy_5U&amp;t=329s"><em>StatQuest’s</em></a> video. I have to say, update rule for GMM is fairly intuitive, and videos like this is a tiny bit misleading. As it is not easy to shoehorn the general EM algorithm into this sort of intuition. Instead, we will not skip (too much) on the maths and will derive exactly how GMM update rules arise from EM.
+<h2 id="31-derivation-">3.1 Derivation <a name="3.1"></a></h2>
 <h3 id="model-definition">Model Definition</h3>
 <p>Remember the graph earlier?
 <center><img src="https://i.filmot.com/U6RLrrJ.png" alt="drawing" width="350" /></center>
@@ -343,7 +357,7 @@ To get optimum mixing proportions <code class="highlighter-rouge">$\pi_k$</code>
 \pi_k = \dfrac{\sum_i q(z_i=k)}{N}
 $$</code>
 where <code class="highlighter-rouge">$N$</code> is the total number of data points. The three equations above should all be fairly intuitive, the common theme is to <strong>re-estimate model parameters with our ‘self-labelled’ data points</strong> (labelled by our own variational distribution <code class="highlighter-rouge">$q$</code>). One could have jumped straight into these formula (I couldn’t, but I’m sure some mathmos can). But here, we followed the EM algorithm in order to <strong>maximise likelihood of data points under our model</strong>.
-<h2 id="32-implementation">3.2 Implementation</h2>
+<h2 id="32-implementation-">3.2 Implementation <a name="3.2"></a></h2>
 <p>Of course, any sane person would call <code class="highlighter-rouge">sklearn.mixture.GaussianMixture</code> and just do <code class="highlighter-rouge">GMM.fit(X)</code>. But that is way too efficient. We start with some standard import:
 <figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># bit confusing, one is used to draw from, the other is used for evaluation</span>
@@ -423,6 +437,11 @@ Note we slightly modified covariance matrix update rule so it involves an outer 
 <aside class="related">
 <h2>Related posts</h2>
 <ul class="related-posts">
+   <li>
+    <a href="/posts/vi1">
+        <span>Variational Inference Part 1</span>
+        <small>16/06</small>
+    </a>
 </aside>
            <footer>
     <span>© 2020. Powered by Jekyll & Dactl
