@@ -6,9 +6,29 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 18 Jun 2020 00:26:45 +0100</pubDate>
-    <lastBuildDate>Thu, 18 Jun 2020 00:26:45 +0100</lastBuildDate>
+    <pubDate>Wed, 24 Jun 2020 17:58:51 +0100</pubDate>
+    <lastBuildDate>Wed, 24 Jun 2020 17:58:51 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
+    
+      <item>
+        <title>Few-shot Learning</title>
+        <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.&lt;/p&gt;
+&lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
+
+&lt;p class=&quot;notice&quot;&gt;Big things coming soon!&lt;/p&gt;
+</description>
+        <pubDate>Sun, 21 Jun 2020 00:00:00 +0100</pubDate>
+        <link>http://localhost:4000/posts/few-shot</link>
+        <guid isPermaLink="true">http://localhost:4000/posts/few-shot</guid>
+        
+        <category>practical</category>
+        
+        <category>deep-learning</category>
+        
+        <category>review</category>
+        
+        
+      </item>
     
       <item>
         <title>Variational Inference Part 1</title>

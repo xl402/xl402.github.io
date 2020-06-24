@@ -1,4 +1,4 @@
 ---
 slug: theory
-name: theory
+name: Theory
 ---
