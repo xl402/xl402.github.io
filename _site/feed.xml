@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 26 Jun 2020 11:41:51 +0100</pubDate>
-    <lastBuildDate>Fri, 26 Jun 2020 11:41:51 +0100</lastBuildDate>
+    <pubDate>Fri, 26 Jun 2020 13:20:44 +0100</pubDate>
+    <lastBuildDate>Fri, 26 Jun 2020 13:20:44 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -15,15 +15,19 @@
         <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
-&lt;p class=&quot;notice&quot;&gt;Big things coming soon!&lt;/p&gt;
+&lt;p&gt;It is an understatement to say that modern Deep Neural Networks (DNNs) require large amount of data for them to perform well. This can be shown both in practice and through &lt;a href=&quot;https://mostafa-samir.github.io/ml-theory-pt2/&quot;&gt;Learning Theory&lt;/a&gt;. For example, the classic benchmark datasets such as &lt;a href=&quot;http://www.image-net.org/&quot;&gt;ImageNet&lt;/a&gt; contains 14 million images (for 1000 classes), language models such as &lt;a href=&quot;https://arxiv.org/abs/2005.14165&quot;&gt;GTP3&lt;/a&gt; are literally trained on THE INTERNET.&lt;/p&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/Ei8dDIO.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;While these DNNs’ performance have been impressive, occasionally achieving super-human level accuracy/performance. In real life, data is not as abundant and easy to obtain. The problem is exacerbated when &lt;strong&gt;labelled&lt;/strong&gt; data is required (because £££). Another key challenge in a real-life setting is that model output requirement changes over time. For example, imagine working for an identity-document classification company; at launch, your company may only support 4 types of IDs. Over time, the number of supported IDs will grow. Re-training the model itself is an art and can be very time consuming.&lt;/p&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/n2ZygDK.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;When quality data is scarce and model reusability is key, &lt;strong&gt;few-shot&lt;/strong&gt; learning have been employed successfully to discover patterns in data and make beneficial predictions. When combined with &lt;strong&gt;active learning&lt;/strong&gt; can often bring a competitive edge at the inception of an ML company!&lt;/p&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/UbMjRGh.png&quot; alt=&quot;drawing&quot; width=&quot;350&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/Ei8dDIO.png&quot; alt=&quot;drawing&quot; width=&quot;450&quot; /&gt;&lt;/center&gt;
 
-&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/H4wVk7g.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/n2ZygDK.png&quot; alt=&quot;drawing&quot; width=&quot;450&quot; /&gt;&lt;/center&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/UbMjRGh.png&quot; alt=&quot;drawing&quot; width=&quot;450&quot; /&gt;&lt;/center&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/H4wVk7g.png&quot; alt=&quot;drawing&quot; width=&quot;700&quot; /&gt;&lt;/center&gt;
 </description>
         <pubDate>Sun, 21 Jun 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/few-shot</link>
@@ -114,7 +118,7 @@ where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{H}(q(\theta))$&l
 &lt;p&gt;Now we circle back to an earlier problem we raised - why did we take &lt;code class=&quot;highlighter-rouge&quot;&gt;$\text{KL}(q||p)$&lt;/code&gt;? Why not &lt;code class=&quot;highlighter-rouge&quot;&gt;$\text{KL}(p||q)$&lt;/code&gt;. In short, inspecting equation &lt;code class=&quot;highlighter-rouge&quot;&gt;$[1]$&lt;/code&gt;, had we taken the divergence the other way round, we would end up taking expectation over our intractable posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;. This sort of maximisation is actually still possible, and is termed &lt;em&gt;Belief-Propagation&lt;/em&gt; (which will not be discussed here). What is the effect of the order? Observe that:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$\mathrm{KL}(q(x) \| p(x)) = \int_x q(x)\dfrac{q(x)}{p(x)} dx $$&lt;/code&gt;
 in the cases where &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(x)$&lt;/code&gt; is very close or equal to zero (i.e. low-likelihood regions), the only way to minimise the divergence is to &lt;strong&gt;ensure &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(x)$&lt;/code&gt; is close to zero at these locations&lt;/strong&gt;. Hence we say that &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathrm{KL}(q\| p)$&lt;/code&gt; is &lt;strong&gt;zero-seeking&lt;/strong&gt;. Similar argument may be made for &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathrm{KL}(p\| q)$&lt;/code&gt; which is called &lt;strong&gt;zero-avoiding&lt;/strong&gt;. This is more intuitive through graphical visualisation. Suppose we want to approximate a bimodal distribution with a Gaussian, graphs below shows the behaviour of the two minimisation methods:&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/GTYI3gm.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/GTYI3gm.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;/p&gt;
 
 &lt;p&gt;where the blue line is the true posterior &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta|X)$&lt;/code&gt;, red lines are our variational approximations. So methods with &lt;code class=&quot;highlighter-rouge&quot;&gt;$q||p$&lt;/code&gt; tends to &lt;strong&gt;under estimate&lt;/strong&gt; the posterior variance, c.f. over estimation in &lt;code class=&quot;highlighter-rouge&quot;&gt;$p||q$&lt;/code&gt;. Both can be quiet bad if you think about the real-life impact (under-estimating the uncertainty in getting cancer vs. over-estimating it). A lot of research is done on finding alternative methods/metrics, which of course is beyond the scope of this post.&lt;/p&gt;
