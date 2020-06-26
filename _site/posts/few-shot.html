@@ -141,9 +141,44 @@
  </div>
    <p class="lead">(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.
 <p>
-<p>It is an understatement to say that modern Deep Neural Networks (DNNs) require large amount of data for them to perform well. This can be shown both in practice and through <a href="https://mostafa-samir.github.io/ml-theory-pt2/">Learning Theory</a>. For example, the classic benchmark datasets such as <a href="http://www.image-net.org/">ImageNet</a> contains 14 million images (for 1000 classes), language models such as <a href="https://arxiv.org/abs/2005.14165">GTP3</a> are literally trained on THE INTERNET.
+<h1 id="1-introduction">1. Introduction</h1>
+<p>It is an understatement to say that modern Deep Neural Networks (DNNs) require large amount of data during training. This can be shown both in practice and through <a href="https://mostafa-samir.github.io/ml-theory-pt2/">Learning Theory</a>. For example, the classic benchmark datasets such as <a href="http://www.image-net.org/">ImageNet</a> contains 14 million images (for 1000 classes), language models such as <a href="https://arxiv.org/abs/2005.14165">GTP3</a> are literally trained on THE INTERNET.
 <p>While these DNNs’ performance have been impressive, occasionally achieving super-human level accuracy/performance. In real life, data is not as abundant and easy to obtain. The problem is exacerbated when <strong>labelled</strong> data is required (because £££). Another key challenge in a real-life setting is that model output requirement changes over time. For example, imagine working for an identity-document classification company; at launch, your company may only support 4 types of IDs. Over time, the number of supported IDs will grow. Re-training the model itself is an art and can be very time consuming.
 <p>When quality data is scarce and model reusability is key, <strong>few-shot</strong> learning have been employed successfully to discover patterns in data and make beneficial predictions. When combined with <strong>active learning</strong> can often bring a competitive edge at the inception of an ML company!
+<h1 id="2-problem-definition-and-datasets">2. Problem Definition and Datasets</h1>
+<p><em>Few-shot classification</em> is an instantiation of meta-learning in the field of supervised learning (I think the distinction between few-shot and meta-learning is rather arbitrary). The best way to understand what few-shot learning is trying to achieve is by examining a few common datasets used to train and evaluate few-shot models. Let’s begin by looking at the <em>K-shot N-class classification task</em>:
+<p class="notice"><em>K-shot N-class classification task</em>: during training, we are provided with <strong>several datasets</strong> each containing <strong><em>N</em> classes with <em>K</em> examples</strong>, at test time, we are given <strong>a new dataset</strong>, and asked to make predictions based on the labelled examples.
+<p>The term few-shot (or <em>K</em>-shot) therefore means the number of examples provided per class (or task). Pictorially, this is shown as a <strong>dataset of datasets</strong>:
+<center>
+<img src="https://i.filmot.com/XJtP39p.png" alt="drawing" width="850" />
+<figcaption>
+Fig 1. Typical dataset used for evaluating few-shot models. Note the unusualness of this "dataset of datasets". Image is taken from <a href="https://lilianweng.github.io/lil-log/2018/11/30/meta-learning.html">LiLian's blog</a>.
+</figcaption>
+</center>
+<p>
+<p>To be more concrete, the <a href="https://github.com/brendenlake/omniglot/">Omniglot</a> dataset contains 50 different alphabets, each containing different number (around 20) characters. Each character is drawn by 20 people, amounting to a total of 1623 characters.
+<center>
+<img src="https://i.filmot.com/qKEb5Mn.png" alt="drawing" width="700" />
+<figcaption>
+Fig 2. Omniglot dataset
+</figcaption>
+</center>
+<p>
+<p>Going back to the earlier definition, each alphabet’s OCR problem can be characterised as an <em>S</em>-class 20-shots. Where <em>S</em> corresponds to the size of each alphabet.
+<p>One of the most challenging dataset used for few-shots learning is the <a href="https://www.kaggle.com/whitemoon/miniimagenet">mini-ImageNet</a> which contains 100 classes, each with only 600 examples. It is worth mentioning, the way train-val-test split for few-shots learning is <strong>done on the classes</strong>, in this case, we typically have a 64-16-20 split.
+<center>
+<img src="https://i.filmot.com/79Yb3nb.png" alt="drawing" width="700" />
+<figcaption>
+Fig 3. Mini-ImageNet dataset
+</figcaption>
+</center>
+<p>
+<p>Hopefully I have conveyed how challenging few-shot learning is. Personally, I think few-shot is more general than the typical supervised DNNs. People normally call this type of learning “learning to learn”, since our model needs to either have weights/architecture that generalises across different tasks, or to be able to rapidly change the weights to adapt to a new task.
+<h1 id="3-methodsliterature-overview">3. Methods/Literature Overview</h1>
+<p>One rather obvious (though practically difficult) thing to achieve few-shots learning is through <strong>data augmentation</strong>. The motivation is simply: we do not have enough example data per class, let’s just generate more. People can really go crazy on data augmentation, recent methods use ideas such as <a href="https://papers.nips.cc/paper/7504-metagan-an-adversarial-approach-to-few-shot-learning">GANs</a> and <a href="https://arxiv.org/abs/1904.03472">Sailency-guided Hallucinations</a>. Since we can always perform data augmentation in conjunction with other approaches (and frankly, the concept is not new), this class of method will not be discussed in this post.
+<p>The other approach which is done by most ML practitioners is <strong>transfer learning</strong>. The idea of taking an off-the-shelf model trained by big research groups on millions of data points, then fine tune the last few layer’s weights on our own dataset is definitely not new. Therefore, we will also omit discussing these. In fact, for most methods demonstrated, assume we always do some sort of transfer learning via models like VGG net.
+<p><strong>Metric-based learning</strong> such as the <a href="https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf"><em>Siamese networks</em></a> and <a href="https://arxiv.org/abs/1606.04080"><em>Matching networks</em></a> will be described in depth here. The fundamental idea is that these methods learn a distance metric between the querying data point and the support set (examples).
+<p><strong>Optimisation-based learning</strong> such as the <a href="https://openreview.net/pdf?id=rJY0-Kcll"><em>LSTM Meta-Learner</em></a> and <a href="https://arxiv.org/abs/1703.03400"><em>Model-Agnostic Meta-Learning</em></a>
 <center><img src="https://i.filmot.com/Ei8dDIO.png" alt="drawing" width="450" /></center>
 <center><img src="https://i.filmot.com/n2ZygDK.png" alt="drawing" width="450" /></center>
 <center><img src="https://i.filmot.com/UbMjRGh.png" alt="drawing" width="450" /></center>

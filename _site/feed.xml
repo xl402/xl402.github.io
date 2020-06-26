@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 26 Jun 2020 13:20:44 +0100</pubDate>
-    <lastBuildDate>Fri, 26 Jun 2020 13:20:44 +0100</lastBuildDate>
+    <pubDate>Fri, 26 Jun 2020 16:38:47 +0100</pubDate>
+    <lastBuildDate>Fri, 26 Jun 2020 16:38:47 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -15,11 +15,66 @@
         <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
-&lt;p&gt;It is an understatement to say that modern Deep Neural Networks (DNNs) require large amount of data for them to perform well. This can be shown both in practice and through &lt;a href=&quot;https://mostafa-samir.github.io/ml-theory-pt2/&quot;&gt;Learning Theory&lt;/a&gt;. For example, the classic benchmark datasets such as &lt;a href=&quot;http://www.image-net.org/&quot;&gt;ImageNet&lt;/a&gt; contains 14 million images (for 1000 classes), language models such as &lt;a href=&quot;https://arxiv.org/abs/2005.14165&quot;&gt;GTP3&lt;/a&gt; are literally trained on THE INTERNET.&lt;/p&gt;
+&lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
+
+&lt;p&gt;It is an understatement to say that modern Deep Neural Networks (DNNs) require large amount of data during training. This can be shown both in practice and through &lt;a href=&quot;https://mostafa-samir.github.io/ml-theory-pt2/&quot;&gt;Learning Theory&lt;/a&gt;. For example, the classic benchmark datasets such as &lt;a href=&quot;http://www.image-net.org/&quot;&gt;ImageNet&lt;/a&gt; contains 14 million images (for 1000 classes), language models such as &lt;a href=&quot;https://arxiv.org/abs/2005.14165&quot;&gt;GTP3&lt;/a&gt; are literally trained on THE INTERNET.&lt;/p&gt;
 
 &lt;p&gt;While these DNNs’ performance have been impressive, occasionally achieving super-human level accuracy/performance. In real life, data is not as abundant and easy to obtain. The problem is exacerbated when &lt;strong&gt;labelled&lt;/strong&gt; data is required (because £££). Another key challenge in a real-life setting is that model output requirement changes over time. For example, imagine working for an identity-document classification company; at launch, your company may only support 4 types of IDs. Over time, the number of supported IDs will grow. Re-training the model itself is an art and can be very time consuming.&lt;/p&gt;
 
 &lt;p&gt;When quality data is scarce and model reusability is key, &lt;strong&gt;few-shot&lt;/strong&gt; learning have been employed successfully to discover patterns in data and make beneficial predictions. When combined with &lt;strong&gt;active learning&lt;/strong&gt; can often bring a competitive edge at the inception of an ML company!&lt;/p&gt;
+
+&lt;h1 id=&quot;2-problem-definition-and-datasets&quot;&gt;2. Problem Definition and Datasets&lt;/h1&gt;
+
+&lt;p&gt;&lt;em&gt;Few-shot classification&lt;/em&gt; is an instantiation of meta-learning in the field of supervised learning (I think the distinction between few-shot and meta-learning is rather arbitrary). The best way to understand what few-shot learning is trying to achieve is by examining a few common datasets used to train and evaluate few-shot models. Let’s begin by looking at the &lt;em&gt;K-shot N-class classification task&lt;/em&gt;:&lt;/p&gt;
+
+&lt;p class=&quot;notice&quot;&gt;&lt;em&gt;K-shot N-class classification task&lt;/em&gt;: during training, we are provided with &lt;strong&gt;several datasets&lt;/strong&gt; each containing &lt;strong&gt;&lt;em&gt;N&lt;/em&gt; classes with &lt;em&gt;K&lt;/em&gt; examples&lt;/strong&gt;, at test time, we are given &lt;strong&gt;a new dataset&lt;/strong&gt;, and asked to make predictions based on the labelled examples.&lt;/p&gt;
+
+&lt;p&gt;The term few-shot (or &lt;em&gt;K&lt;/em&gt;-shot) therefore means the number of examples provided per class (or task). Pictorially, this is shown as a &lt;strong&gt;dataset of datasets&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;https://i.filmot.com/XJtP39p.png&quot; alt=&quot;drawing&quot; width=&quot;850&quot; /&gt;
+&lt;figcaption&gt;
+Fig 1. Typical dataset used for evaluating few-shot models. Note the unusualness of this &quot;dataset of datasets&quot;. Image is taken from &lt;a href=&quot;https://lilianweng.github.io/lil-log/2018/11/30/meta-learning.html&quot;&gt;LiLian's blog&lt;/a&gt;.
+&lt;/figcaption&gt;
+&lt;/center&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;To be more concrete, the &lt;a href=&quot;https://github.com/brendenlake/omniglot/&quot;&gt;Omniglot&lt;/a&gt; dataset contains 50 different alphabets, each containing different number (around 20) characters. Each character is drawn by 20 people, amounting to a total of 1623 characters.&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;https://i.filmot.com/qKEb5Mn.png&quot; alt=&quot;drawing&quot; width=&quot;700&quot; /&gt;
+&lt;figcaption&gt;
+Fig 2. Omniglot dataset
+&lt;/figcaption&gt;
+&lt;/center&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Going back to the earlier definition, each alphabet’s OCR problem can be characterised as an &lt;em&gt;S&lt;/em&gt;-class 20-shots. Where &lt;em&gt;S&lt;/em&gt; corresponds to the size of each alphabet.&lt;/p&gt;
+
+&lt;p&gt;One of the most challenging dataset used for few-shots learning is the &lt;a href=&quot;https://www.kaggle.com/whitemoon/miniimagenet&quot;&gt;mini-ImageNet&lt;/a&gt; which contains 100 classes, each with only 600 examples. It is worth mentioning, the way train-val-test split for few-shots learning is &lt;strong&gt;done on the classes&lt;/strong&gt;, in this case, we typically have a 64-16-20 split.&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;https://i.filmot.com/79Yb3nb.png&quot; alt=&quot;drawing&quot; width=&quot;700&quot; /&gt;
+&lt;figcaption&gt;
+Fig 3. Mini-ImageNet dataset
+&lt;/figcaption&gt;
+&lt;/center&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Hopefully I have conveyed how challenging few-shot learning is. Personally, I think few-shot is more general than the typical supervised DNNs. People normally call this type of learning “learning to learn”, since our model needs to either have weights/architecture that generalises across different tasks, or to be able to rapidly change the weights to adapt to a new task.&lt;/p&gt;
+
+&lt;h1 id=&quot;3-methodsliterature-overview&quot;&gt;3. Methods/Literature Overview&lt;/h1&gt;
+
+&lt;p&gt;One rather obvious (though practically difficult) thing to achieve few-shots learning is through &lt;strong&gt;data augmentation&lt;/strong&gt;. The motivation is simply: we do not have enough example data per class, let’s just generate more. People can really go crazy on data augmentation, recent methods use ideas such as &lt;a href=&quot;https://papers.nips.cc/paper/7504-metagan-an-adversarial-approach-to-few-shot-learning&quot;&gt;GANs&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1904.03472&quot;&gt;Sailency-guided Hallucinations&lt;/a&gt;. Since we can always perform data augmentation in conjunction with other approaches (and frankly, the concept is not new), this class of method will not be discussed in this post.&lt;/p&gt;
+
+&lt;p&gt;The other approach which is done by most ML practitioners is &lt;strong&gt;transfer learning&lt;/strong&gt;. The idea of taking an off-the-shelf model trained by big research groups on millions of data points, then fine tune the last few layer’s weights on our own dataset is definitely not new. Therefore, we will also omit discussing these. In fact, for most methods demonstrated, assume we always do some sort of transfer learning via models like VGG net.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Metric-based learning&lt;/strong&gt; such as the &lt;a href=&quot;https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf&quot;&gt;&lt;em&gt;Siamese networks&lt;/em&gt;&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1606.04080&quot;&gt;&lt;em&gt;Matching networks&lt;/em&gt;&lt;/a&gt; will be described in depth here. The fundamental idea is that these methods learn a distance metric between the querying data point and the support set (examples).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Optimisation-based learning&lt;/strong&gt; such as the &lt;a href=&quot;https://openreview.net/pdf?id=rJY0-Kcll&quot;&gt;&lt;em&gt;LSTM Meta-Learner&lt;/em&gt;&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1703.03400&quot;&gt;&lt;em&gt;Model-Agnostic Meta-Learning&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;
 
 &lt;center&gt;&lt;img src=&quot;https://i.filmot.com/Ei8dDIO.png&quot; alt=&quot;drawing&quot; width=&quot;450&quot; /&gt;&lt;/center&gt;
 
