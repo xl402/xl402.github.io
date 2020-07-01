@@ -6,13 +6,13 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 28 Jun 2020 11:22:23 +0100</pubDate>
-    <lastBuildDate>Sun, 28 Jun 2020 11:22:23 +0100</lastBuildDate>
+    <pubDate>Wed, 01 Jul 2020 22:04:59 +0100</pubDate>
+    <lastBuildDate>Wed, 01 Jul 2020 22:04:59 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
         <title>Few-shot Learning</title>
-        <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.&lt;/p&gt;
+        <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning and meta-learning ().&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
@@ -68,11 +68,11 @@ Fig 3. Mini-ImageNet dataset
 
 &lt;h1 id=&quot;3-methodsliterature-overview&quot;&gt;3. Methods/Literature Overview&lt;/h1&gt;
 
-&lt;p&gt;One rather obvious (though practically difficult) thing to achieve few-shots learning is through &lt;strong&gt;data augmentation&lt;/strong&gt;. The motivation is simply: we do not have enough example data per class, let’s just generate more. People can really go crazy on data augmentation, recent methods use ideas such as &lt;a href=&quot;https://papers.nips.cc/paper/7504-metagan-an-adversarial-approach-to-few-shot-learning&quot;&gt;GANs&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1904.03472&quot;&gt;Sailency-guided Hallucinations&lt;/a&gt;. Since we can always perform data augmentation in conjunction with other approaches (and frankly, the concept is not new), this class of method will not be discussed in this post.&lt;/p&gt;
+&lt;p&gt;One rather obvious (though practically difficult) thing to achieve few-shots learning is through &lt;strong&gt;data augmentation&lt;/strong&gt;. The motivation is simple: we do not have enough example data per class, let’s just generate more. People can really go crazy on data augmentation, recent methods use ideas such as &lt;a href=&quot;https://papers.nips.cc/paper/7504-metagan-an-adversarial-approach-to-few-shot-learning&quot;&gt;GANs&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1904.03472&quot;&gt;Sailency-guided Hallucinations&lt;/a&gt;. Since we can always perform data augmentation in conjunction with other approaches (and frankly, the concept is not new), this class of method will not be discussed in this post.&lt;/p&gt;
 
 &lt;p&gt;The other approach which is done by most ML practitioners is &lt;strong&gt;transfer learning&lt;/strong&gt;. The idea of taking an off-the-shelf model trained by big research groups on millions of data points, then fine tune the last few layer’s weights on our own dataset is definitely not new. Therefore, we will also omit discussing these. In fact, for most methods demonstrated, assume we always do some sort of transfer learning via models like VGG net.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Metric-based learning&lt;/strong&gt; such as the &lt;a href=&quot;https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf&quot;&gt;&lt;em&gt;Siamese networks&lt;/em&gt;&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1606.04080&quot;&gt;&lt;em&gt;Matching networks&lt;/em&gt;&lt;/a&gt; will be described in depth here. The fundamental idea is that these methods learn a distance metric between the querying data point and the support set (examples).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Metric-based learning&lt;/strong&gt; such as the &lt;a href=&quot;https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf&quot;&gt;&lt;em&gt;Siamese networks&lt;/em&gt;&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1606.04080&quot;&gt;&lt;em&gt;Matching networks&lt;/em&gt;&lt;/a&gt; will be described in depth here. The fundamental idea is that these methods learn a distance metric between the querying data point and the support set (labelled examples).&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Optimisation-based learning&lt;/strong&gt; such as the &lt;a href=&quot;https://openreview.net/pdf?id=rJY0-Kcll&quot;&gt;&lt;em&gt;LSTM Meta-Learner&lt;/em&gt;&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1703.03400&quot;&gt;&lt;em&gt;Model-Agnostic Meta-Learning&lt;/em&gt;&lt;/a&gt; modifies the classic gradient descent. Encouraging the loss function to converge within a small number of optimisation steps.&lt;/p&gt;
 
@@ -131,6 +131,39 @@ In the animation below, we see how a &lt;strong&gt;prototyping network&lt;/stron
 &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(y=c \mid x)=\operatorname{softmax}\left(-d_{\varphi}\left(f_{\theta}(x), v_{c}\right)\right)$$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;This is slightly more general than just picking the argmin over distances between prototypes and the query image’s latent embedding. Since the distance function &lt;code class=&quot;highlighter-rouge&quot;&gt;$d_\psi$&lt;/code&gt; can be another neural network with learnt weights.&lt;/p&gt;
+
+&lt;h1 id=&quot;5-optimisation-based-approach&quot;&gt;5. Optimisation-Based Approach&lt;/h1&gt;
+
+&lt;p&gt;Another way to tackle few-shot learning is through modifying how parameters are updated within DL models. This approach is termed optimisation-based. The key concept is these methods utilise &lt;strong&gt;another network&lt;/strong&gt;, i.e. a meta network, that &lt;strong&gt;learns how to train a deep learning model&lt;/strong&gt; across different tasks.&lt;/p&gt;
+
+&lt;h2 id=&quot;51-lstm-meta-learner&quot;&gt;5.1 LSTM Meta-Learner&lt;/h2&gt;
+
+&lt;p&gt;The standard optimisation algorithms used to train deep neural networks take the form:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\theta_{t}=\theta_{t-1}-\alpha_{t} \nabla_{\theta_{t-1}} \mathcal{L}_{t}$$&lt;/code&gt;
+where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta_{t-1}$&lt;/code&gt; are the parameters of the model after &lt;code class=&quot;highlighter-rouge&quot;&gt;$t-1$&lt;/code&gt; updates, &lt;code class=&quot;highlighter-rouge&quot;&gt;$\alpha_t$&lt;/code&gt; is the learning rate at time &lt;code class=&quot;highlighter-rouge&quot;&gt;$t$&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{L}_{t}$&lt;/code&gt; is the loss optimised by the model and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\nabla_{\theta_{t-1}} \mathcal{L}_{t}$&lt;/code&gt; denotes the gradient of the loss. &lt;a href=&quot;https://openreview.net/pdf?id=rJY0-Kcll&quot;&gt;Ravi &amp;amp; Larochelle (2017)&lt;/a&gt; observed that, this update resembles the update for the cell state in an LSTM::
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$c_{t}=f_{t} \odot c_{t-1}+i_{t} \odot \tilde{c}_{t}$$&lt;/code&gt;
+if &lt;code class=&quot;highlighter-rouge&quot;&gt;$f_{t}=1, c_{t-1}=\theta_{t-1}, i_{t}=\alpha_{t}$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\tilde{c}_{t}=-\nabla_{\theta_{t-1}} \mathcal{L}_{t}$&lt;/code&gt;. Thus, they proposed training a meta-learner LSTM to learn an update rule for training a learner network. The cell state of the LSTM is the parameters of the learner i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;$c_{t}=\theta_{t}$&lt;/code&gt;, and the candidate cell state &lt;code class=&quot;highlighter-rouge&quot;&gt;$\tilde{c}_{t}=\nabla_{\theta_{t-1}} \mathcal{L}_{t}$&lt;/code&gt;.
+The best way to understand the LSTM meta-learner is by first looking at the animation below and then the algorithm shown in the original paper:&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/labmcjV.png&quot; alt=&quot;drawing&quot; width=&quot;800&quot; /&gt;&lt;/center&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/NdCIkmQ.png&quot; alt=&quot;drawing&quot; width=&quot;600&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{D}_{meta-train}$&lt;/code&gt; dataset is the dataset of datasets we discussed in the second section. Basically, we sample &lt;strong&gt;a dataset&lt;/strong&gt; (1 shot, 5 class in the animation above) and use that to update the &lt;strong&gt;learner&lt;/strong&gt;’s parameters via the meta-learner (whose parameters are fixed). We then use the &lt;strong&gt;test set&lt;/strong&gt; of the sampled dataset to &lt;strong&gt;update meta-learner’s parameters&lt;/strong&gt;. It is a bit weird to train on the test set. But remember in this setting, our true test set is another dataset of datasets. We repeat the procedure above by sampling another dataset from &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{D}_{meta-train}$&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;One key challenge for this method is - the learner has tens of thousands of parameters, which the meta-learner needs to output. To prevent an explosion of meta-learner parameters, they employed some sort of parameter sharing. I.e. meta-learner only modifies a few “key layers” within the learner network. The original paper has more in-depth description on how this is achieved.&lt;/p&gt;
+
+&lt;h2 id=&quot;52-maml&quot;&gt;5.2 MAML&lt;/h2&gt;
+
+&lt;p&gt;MAML stands for &lt;strong&gt;Model-Agnostic Meta-Learning&lt;/strong&gt; (&lt;a href=&quot;https://arxiv.org/abs/1703.03400&quot;&gt;Finn, et al. 2017&lt;/a&gt;), is a fairly general optimisation algorithm, that can be used not only for few-shot classification, but also generalises to reinforcement learning. It is quiet easy to implement also, and achieves SOTA (or used to) on a variety of tasks.&lt;/p&gt;
+
+&lt;p&gt;The high level ideal learning for MAML is updating parameters so that we always &lt;strong&gt;update towards &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta^*$&lt;/code&gt; which are the parameters that are “closest” to the optimal parameters for all the subtasks&lt;/strong&gt;. Hence fine-tuning is more efficient. Pictorially, this is shown in the animation below, where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta_i^*$&lt;/code&gt; are optimal parameters for the &lt;code class=&quot;highlighter-rouge&quot;&gt;$i$&lt;/code&gt;th task.&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/bZ9bIvV.png&quot; alt=&quot;drawing&quot; width=&quot;400&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;The algorithm for MAML is very simple. Algorithm below is taken from the original paper. Unfortunately, a different set of notations are used, but &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\mathcal{T})$&lt;/code&gt; here literally means the meta training dataset (dataset of datasets) as in meta-LSTM.&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://i.filmot.com/xp0g0NY.png&quot; alt=&quot;drawing&quot; width=&quot;400&quot; /&gt;&lt;/center&gt;
 </description>
         <pubDate>Sun, 21 Jun 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/few-shot</link>

@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#ffffff">
 <title>Few-shot Learning &#9642; Lu Blog</title>
 <!--
-<meta name="description" content="(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.
+<meta name="description" content="(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning and meta-learning ().
 ">
 -->
 <meta name="description" content="© 2020. Powered by Jekyll & Dactl
@@ -139,7 +139,7 @@
      </div>
    </div>
  </div>
-   <p class="lead">(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning, meta-learning and bayesian few-shots.
+   <p class="lead">(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning and meta-learning ().
 <p>
 <h1 id="1-introduction">1. Introduction</h1>
 <p>It is an understatement to say that modern Deep Neural Networks (DNNs) require large amount of data during training. This can be shown both in practice and through <a href="https://mostafa-samir.github.io/ml-theory-pt2/">Learning Theory</a>. For example, the classic benchmark datasets such as <a href="http://www.image-net.org/">ImageNet</a> contains 14 million images (for 1000 classes), language models such as <a href="https://arxiv.org/abs/2005.14165">GTP3</a> are literally trained on THE INTERNET.
@@ -175,9 +175,9 @@ Fig 3. Mini-ImageNet dataset
 <p>
 <p>Hopefully I have conveyed how challenging few-shot learning is. Personally, I think few-shot is more general than the typical supervised DNNs. People normally call this type of learning “learning to learn”, since our model needs to either have weights/architecture that generalises across different tasks, or to be able to rapidly change the weights to adapt to a new task.
 <h1 id="3-methodsliterature-overview">3. Methods/Literature Overview</h1>
-<p>One rather obvious (though practically difficult) thing to achieve few-shots learning is through <strong>data augmentation</strong>. The motivation is simply: we do not have enough example data per class, let’s just generate more. People can really go crazy on data augmentation, recent methods use ideas such as <a href="https://papers.nips.cc/paper/7504-metagan-an-adversarial-approach-to-few-shot-learning">GANs</a> and <a href="https://arxiv.org/abs/1904.03472">Sailency-guided Hallucinations</a>. Since we can always perform data augmentation in conjunction with other approaches (and frankly, the concept is not new), this class of method will not be discussed in this post.
+<p>One rather obvious (though practically difficult) thing to achieve few-shots learning is through <strong>data augmentation</strong>. The motivation is simple: we do not have enough example data per class, let’s just generate more. People can really go crazy on data augmentation, recent methods use ideas such as <a href="https://papers.nips.cc/paper/7504-metagan-an-adversarial-approach-to-few-shot-learning">GANs</a> and <a href="https://arxiv.org/abs/1904.03472">Sailency-guided Hallucinations</a>. Since we can always perform data augmentation in conjunction with other approaches (and frankly, the concept is not new), this class of method will not be discussed in this post.
 <p>The other approach which is done by most ML practitioners is <strong>transfer learning</strong>. The idea of taking an off-the-shelf model trained by big research groups on millions of data points, then fine tune the last few layer’s weights on our own dataset is definitely not new. Therefore, we will also omit discussing these. In fact, for most methods demonstrated, assume we always do some sort of transfer learning via models like VGG net.
-<p><strong>Metric-based learning</strong> such as the <a href="https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf"><em>Siamese networks</em></a> and <a href="https://arxiv.org/abs/1606.04080"><em>Matching networks</em></a> will be described in depth here. The fundamental idea is that these methods learn a distance metric between the querying data point and the support set (examples).
+<p><strong>Metric-based learning</strong> such as the <a href="https://www.cs.cmu.edu/~rsalakhu/papers/oneshot1.pdf"><em>Siamese networks</em></a> and <a href="https://arxiv.org/abs/1606.04080"><em>Matching networks</em></a> will be described in depth here. The fundamental idea is that these methods learn a distance metric between the querying data point and the support set (labelled examples).
 <p><strong>Optimisation-based learning</strong> such as the <a href="https://openreview.net/pdf?id=rJY0-Kcll"><em>LSTM Meta-Learner</em></a> and <a href="https://arxiv.org/abs/1703.03400"><em>Model-Agnostic Meta-Learning</em></a> modifies the classic gradient descent. Encouraging the loss function to converge within a small number of optimisation steps.
 <p><strong>Model-based learning</strong> designs models specifically for fast-learning. This is normally achieved through making the network having explicit memories (much like Neural Turing Machines). These models are interesting but because they are quiet contrived, we will omit their discussions here.
 <p>Finally, we will briefly look at <strong>Bayesian methods</strong> for few-shot learning, including <a href="http://bayesiandeeplearning.org/2018/papers/10.pdf">VERSA</a> by Richard Turner et al.
@@ -212,6 +212,25 @@ In the animation below, we see how a <strong>prototyping network</strong> works,
 <p>At test-time, the distribution over classes for a given test input <code class="highlighter-rouge">$x$</code> is a softmax over the inverse of distances between the test data embedding and prototype vectors:
 <p><code class="highlighter-rouge">$$p(y=c \mid x)=\operatorname{softmax}\left(-d_{\varphi}\left(f_{\theta}(x), v_{c}\right)\right)$$</code>
 <p>This is slightly more general than just picking the argmin over distances between prototypes and the query image’s latent embedding. Since the distance function <code class="highlighter-rouge">$d_\psi$</code> can be another neural network with learnt weights.
+<h1 id="5-optimisation-based-approach">5. Optimisation-Based Approach</h1>
+<p>Another way to tackle few-shot learning is through modifying how parameters are updated within DL models. This approach is termed optimisation-based. The key concept is these methods utilise <strong>another network</strong>, i.e. a meta network, that <strong>learns how to train a deep learning model</strong> across different tasks.
+<h2 id="51-lstm-meta-learner">5.1 LSTM Meta-Learner</h2>
+<p>The standard optimisation algorithms used to train deep neural networks take the form:
+<code class="highlighter-rouge">$$\theta_{t}=\theta_{t-1}-\alpha_{t} \nabla_{\theta_{t-1}} \mathcal{L}_{t}$$</code>
+where <code class="highlighter-rouge">$\theta_{t-1}$</code> are the parameters of the model after <code class="highlighter-rouge">$t-1$</code> updates, <code class="highlighter-rouge">$\alpha_t$</code> is the learning rate at time <code class="highlighter-rouge">$t$</code>, <code class="highlighter-rouge">$\mathcal{L}_{t}$</code> is the loss optimised by the model and <code class="highlighter-rouge">$\nabla_{\theta_{t-1}} \mathcal{L}_{t}$</code> denotes the gradient of the loss. <a href="https://openreview.net/pdf?id=rJY0-Kcll">Ravi &amp; Larochelle (2017)</a> observed that, this update resembles the update for the cell state in an LSTM::
+<code class="highlighter-rouge">$$c_{t}=f_{t} \odot c_{t-1}+i_{t} \odot \tilde{c}_{t}$$</code>
+if <code class="highlighter-rouge">$f_{t}=1, c_{t-1}=\theta_{t-1}, i_{t}=\alpha_{t}$</code> and <code class="highlighter-rouge">$\tilde{c}_{t}=-\nabla_{\theta_{t-1}} \mathcal{L}_{t}$</code>. Thus, they proposed training a meta-learner LSTM to learn an update rule for training a learner network. The cell state of the LSTM is the parameters of the learner i.e. <code class="highlighter-rouge">$c_{t}=\theta_{t}$</code>, and the candidate cell state <code class="highlighter-rouge">$\tilde{c}_{t}=\nabla_{\theta_{t-1}} \mathcal{L}_{t}$</code>.
+The best way to understand the LSTM meta-learner is by first looking at the animation below and then the algorithm shown in the original paper:
+<center><img src="https://i.filmot.com/labmcjV.png" alt="drawing" width="800" /></center>
+<center><img src="https://i.filmot.com/NdCIkmQ.png" alt="drawing" width="600" /></center>
+<p>The <code class="highlighter-rouge">$\mathcal{D}_{meta-train}$</code> dataset is the dataset of datasets we discussed in the second section. Basically, we sample <strong>a dataset</strong> (1 shot, 5 class in the animation above) and use that to update the <strong>learner</strong>’s parameters via the meta-learner (whose parameters are fixed). We then use the <strong>test set</strong> of the sampled dataset to <strong>update meta-learner’s parameters</strong>. It is a bit weird to train on the test set. But remember in this setting, our true test set is another dataset of datasets. We repeat the procedure above by sampling another dataset from <code class="highlighter-rouge">$\mathcal{D}_{meta-train}$</code>.
+<p>One key challenge for this method is - the learner has tens of thousands of parameters, which the meta-learner needs to output. To prevent an explosion of meta-learner parameters, they employed some sort of parameter sharing. I.e. meta-learner only modifies a few “key layers” within the learner network. The original paper has more in-depth description on how this is achieved.
+<h2 id="52-maml">5.2 MAML</h2>
+<p>MAML stands for <strong>Model-Agnostic Meta-Learning</strong> (<a href="https://arxiv.org/abs/1703.03400">Finn, et al. 2017</a>), is a fairly general optimisation algorithm, that can be used not only for few-shot classification, but also generalises to reinforcement learning. It is quiet easy to implement also, and achieves SOTA (or used to) on a variety of tasks.
+<p>The high level ideal learning for MAML is updating parameters so that we always <strong>update towards <code class="highlighter-rouge">$\theta^*$</code> which are the parameters that are “closest” to the optimal parameters for all the subtasks</strong>. Hence fine-tuning is more efficient. Pictorially, this is shown in the animation below, where <code class="highlighter-rouge">$\theta_i^*$</code> are optimal parameters for the <code class="highlighter-rouge">$i$</code>th task.
+<center><img src="https://i.filmot.com/bZ9bIvV.png" alt="drawing" width="400" /></center>
+<p>The algorithm for MAML is very simple. Algorithm below is taken from the original paper. Unfortunately, a different set of notations are used, but <code class="highlighter-rouge">$p(\mathcal{T})$</code> here literally means the meta training dataset (dataset of datasets) as in meta-LSTM.
+<center><img src="https://i.filmot.com/xp0g0NY.png" alt="drawing" width="400" /></center>
 </article>
 <aside class="related">
 <h2>Related posts</h2>
