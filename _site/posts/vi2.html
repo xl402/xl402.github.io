@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#ffffff">
 <title>Variational Inference Part 2 &#9642; Lu Blog</title>
 <!--
-<meta name="description" content="(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including neural baseline).
+<meta name="description" content="(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including the neural baseline).
 ">
 -->
 <meta name="description" content="© 2020. Powered by Jekyll & Dactl
@@ -139,8 +139,29 @@
      </div>
    </div>
  </div>
-   <p class="lead">(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including neural baseline).
+   <p class="lead">(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including the <em>neural baseline</em>).
 <p>
+<h1 id="1-introduction">1. Introduction</h1>
+<table>
+ <tbody>
+   <tr>
+     <td>In <a href="http://tlublog.com/posts/vi1">part I</a> of the series, we explored the origin of variational inference. As a quick recap, the posterior distribution $p(\theta
+     <td>X)$ is intractable to compute, as we need to explicitly compute the evidence term:
+</table>
+<p><code class="highlighter-rouge">$$p(X)=\int_{\theta} p(X \mid \theta) p(\theta)$$</code>
+<p>this integration over the parameter space is very very expensive.
+<p>We cook up a <em>variational distribution</em> <code class="highlighter-rouge">$q(\theta)$</code> that <em>approximates</em> the posterior. The problem of finding the posterior distribution therefore becomes an <strong>optimisation problem</strong>. Specifically, we wish to minimise:
+<code class="highlighter-rouge">$$\text{KL}(q(\theta) \| p(\theta \mid X))$$</code>
+we discussed the implication of the ordering between <code class="highlighter-rouge">$q$</code> and <code class="highlighter-rouge">$p$</code> inside the brackets. In order to perform the optimisation, we showed that the objective function above is equivalent to <strong>maximising</strong> the <em>evidence lower bound</em>:
+<p><code class="highlighter-rouge">$$q^{*}=\operatorname{argmax}_{q \in Q}\text{ELBO} = \int_\theta q(\theta) \log p(\theta, X)d\theta - \int_\theta q(\theta)\log q(\theta)$$</code>
+<code class="highlighter-rouge">$$ = \operatorname{argmax}_{q \in Q} \mathbb{E}_{\theta \sim q}[p(\theta, X)] + \mathcal{H}(q(\theta))$$</code>
+<p>which intuitively speaking contains the maximum likelihood term <code class="highlighter-rouge">$p(\theta, X)$</code> that prefers point estimation, and the entropy term <code class="highlighter-rouge">$\mathcal{H}(q(\theta))$</code> that prefers <em>diffusive</em> estimation. Also note how this ELBO can be estimated easily with Monte-Carlo sampling. Since by construction, we know how to generate samples from <code class="highlighter-rouge">$p(\theta, X)$</code>.
+<p>We then introduced an <strong>analytical method</strong> called <em>mean-field</em> approximation, that falls under the framework of ELBO maximisation. One major problem with the <em>mean-field</em> approach is that:
+<ul>
+ <li>It places heavy constraint on what our variational distribution <code class="highlighter-rouge">$q(\theta)$</code> (it assumes it to be fully factorised)
+ <li>Like me, you probably do not want to go through pages of maths on differentiating some disgusting looking equations (checkout the maths on Bayesian Mixture Model or Latent Dirchlet Allocation if interested)
+</ul>
+<p>This post describes the more modern techniques used to do variational inference: the <strong>black-box</strong> family. Specifically, we will look at the <em>reparameterisation trick</em> and the famous <em>REINFORCE</em> algorithm. We will also be discussing some variance reduction techniques such as the <em>baseline</em> method. To make this post less dry, I will also be including some <em>Pyro</em> (probabilistic programming language based on <em>PyTorch</em>) just to demonstrate how easy black-box VI is.
 </article>
 <aside class="related">
 <h2>Related posts</h2>
