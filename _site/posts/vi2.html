@@ -11,7 +11,7 @@
 <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="msapplication-TileColor" content="#da532c">
 <meta name="theme-color" content="#ffffff">
-<title>Variational Inference Part 2 &#9642; Lu Blog</title>
+<title>Variational Inference Part 2: Black-Box VI &#9642; Lu Blog</title>
 <!--
 <meta name="description" content="(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including the neural baseline).
 ">
@@ -21,7 +21,7 @@
 <meta name="keywords" content="theory, bayesian">
 <link rel="canonical" href="http://localhost:4000/posts/vi2">
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Variational Inference Part 2" />
+<meta name="twitter:title" content="Variational Inference Part 2: Black-Box VI" />
 <meta name="twitter:description" content="© 2020. Powered by Jekyll & Dactl
 " />
 <meta name="twitter:image" content="http://localhost:4000" />
@@ -29,7 +29,7 @@
 <link rel="author" href="">
 <meta property="og:locale" content="">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Variational Inference Part 2">
+<meta property="og:title" content="Variational Inference Part 2: Black-Box VI">
 <meta property="og:description" content="© 2020. Powered by Jekyll & Dactl
 ">
 <meta property="og:url" content="http://localhost:4000/posts/vi2">
@@ -128,7 +128,7 @@
     <!--Post hero image source-->
    <div class="heading-container hero-heading hero-heading-post">
      <h1>
-          Variational Inference Part 2
+          Variational Inference Part 2: Black-Box VI
      </h1>
      <div class="post-meta">
         <span>05/07/2020</span>
@@ -149,7 +149,7 @@
 <code class="highlighter-rouge">$$\text{KL}(q(\theta) \| p(\theta \mid X))$$</code>
 we discussed the implication of the ordering between <code class="highlighter-rouge">$q$</code> and <code class="highlighter-rouge">$p$</code> inside the brackets. In order to perform the optimisation, we showed that the objective function above is equivalent to <strong>maximising</strong> the <em>evidence lower bound</em>:
 <p><code class="highlighter-rouge">$$q^{*}=\operatorname{argmax}_{q \in Q}\text{ELBO} = \int_\theta q(\theta) \log p(\theta, X)d\theta - \int_\theta q(\theta)\log q(\theta)$$</code>
-<code class="highlighter-rouge">$$ = \operatorname{argmax}_{q \in Q} \mathbb{E}_{\theta \sim q}[p(\theta, X)] + \mathcal{H}(q(\theta))$$</code>
+<code class="highlighter-rouge">$$ = \operatorname{argmax}_{q \in Q} \mathbb{E}_{\theta \sim q}[p(\theta, X)] + \mathcal{H}(q(\theta))\quad [1]$$</code>
 <p>which intuitively speaking contains the maximum likelihood term <code class="highlighter-rouge">$p(\theta, X)$</code> that prefers point estimation, and the entropy term <code class="highlighter-rouge">$\mathcal{H}(q(\theta))$</code> that prefers <em>diffusive</em> estimation. Also note how this ELBO can be estimated easily with Monte-Carlo sampling. Since by construction, we know how to generate samples from <code class="highlighter-rouge">$p(\theta, X)$</code>.
 <p>We then introduced an <strong>analytical method</strong> called <em>mean-field</em> approximation, that falls under the framework of ELBO maximisation. The major problems with the <em>mean-field</em> approach are that:
 <ul>
@@ -157,13 +157,44 @@ we discussed the implication of the ordering between <code class="highlighter-ro
  <li>Like me, you probably do not want to go through pages of maths on differentiating some disgusting looking equations (checkout the maths on Bayesian Mixture Model or Latent Dirchlet Allocation if interested)
 </ul>
 <p>This post describes the more modern techniques used to do variational inference: the <strong>black-box</strong> family. Specifically, we will look at the <em>reparameterisation trick</em> and the famous <em>REINFORCE</em> algorithm. We will also be discussing some variance reduction techniques such as the <em>baseline</em> method. To make this post less dry, I will also be including some <em>Pyro</em> (probabilistic programming language based on <em>PyTorch</em>) just to demonstrate how easy black-box VI is.
+<h1 id="2-theory-of-black-box-vi">2. Theory of Black-Box VI</h1>
+<h2 id="21-why-is-elbo-backprop-hard">2.1 Why Is ELBO Backprop Hard?</h2>
+<p>One natural question to ask is - why can’t we just do backpropogation through this ELBO objective function? Let us first write down our ELBO (in a more workable format):
+<p><code class="highlighter-rouge">$$\mathrm{ELBO} = \mathbb{E}_{q_{\phi}(\theta)}\left[\log p(x, \theta)-\log q_{\phi}(\theta)\right]$$</code>
+<p>This is not too much change from equation [1], we made it more explicit that our variational distribution <code class="highlighter-rouge">$q$</code> is parameterised by <code class="highlighter-rouge">$\phi$</code>. Form simplicity, let’s call variational distribution <code class="highlighter-rouge">$q$</code> the <strong>guide</strong> (this is commonly used in literature). The problem is that <strong>ELBO is an expectation</strong>, so we need to be able to compute unbiased estimates of
+<p><code class="highlighter-rouge">$$\nabla_{\theta, \phi} \mathrm{ELBO}=\nabla_{\theta, \phi} \mathbb{E}_{q_{\phi}(\theta)}\left[\log p(x, \theta)-\log q_{\phi}(\theta)\right]$$</code>
+<p>Unfortunately, we <strong>can’t move the grad inside the expectation</strong>, since our expectation is taken under our guide <code class="highlighter-rouge">$q$</code> that depends on <code class="highlighter-rouge">$\phi$</code>. This problem can be framed in a more generic way, we can drop the distinction between <code class="highlighter-rouge">$\theta$</code> and <code class="highlighter-rouge">$\phi$</code>, also let’s use <code class="highlighter-rouge">$f_\phi(\theta)$</code> to denote any arbituary function within the bracket:
+<p><code class="highlighter-rouge">$$\nabla_{\phi} \mathbb{E}_{q_{\phi}(\theta)}\left[f_{\phi}(\theta)\right]  \quad [2]$$</code>
+<p>Equation [2] describes the <em>gradient through an expectation</em> and can be also found in the policy gradient algorithm in reinforcement learning. The remaining of the post aims to obtain <strong>unbiased estimates</strong> of equation [2].
+<h2 id="22-reparameterisation-trick">2.2 Reparameterisation Trick</h2>
+<p>The reparameterisation trick also known as path-wise gradients allow us to compute equation [2] by rewritting samples from the guide <code class="highlighter-rouge">$q$</code> in terms of a noise variable <code class="highlighter-rouge">$\epsilon$</code>:
+<p><code class="highlighter-rouge">$$\mathbb{E}_{q_{\phi}(\theta)}\left[f_{\phi}(\theta)\right]=\mathbb{E}_{q(\epsilon)}\left[f_{\phi}\left(g_{\phi}(\epsilon)\right)\right]$$</code>
+<p>concretely, <code class="highlighter-rouge">$\epsilon \sim q(\epsilon)$</code> and <code class="highlighter-rouge">$\theta = g_{\phi}(\epsilon)$</code>. Crucially all the <code class="highlighter-rouge">$\phi$</code> dependent terms have been moved inside of the expectation. This kind of reparameterisation can be done for many distributions (e.g. the normal distribution). An example of such reparameterisation can be highlighted by assuming that <code class="highlighter-rouge">$\theta$</code> is sampled from a Gaussian <code class="highlighter-rouge">$\theta \sim \mathcal{N}(\mu, \sigma)$</code>. The function <code class="highlighter-rouge">$g_{\phi}(\varepsilon)$</code> can then be expressed as
+<p><code class="highlighter-rouge">$$g_{\phi}(\varepsilon)=\mu_{\phi}+\varepsilon \sigma_{\phi}$$</code>
+<p>where <code class="highlighter-rouge">$\epsilon \sim \mathcal{N}(0, 1)$</code>. Assuming <code class="highlighter-rouge">$f(.)$</code> and <code class="highlighter-rouge">$g(.)$</code> are sufficiently smooth, we can now get unbiased estimates of the gradient of interest by taking a Monte Carlo estimate of this expectation:
+<p><code class="highlighter-rouge">$$\nabla_{\phi} \mathbb{E}_{q(\epsilon)}\left[f_{\phi}\left(g_{\phi}(\epsilon)\right)\right]=\mathbb{E}_{q(\epsilon)}\left[\nabla_{\phi} f_{\phi}\left(g_{\phi}(\epsilon)\right)\right]$$</code>
+<p>In this case, not only do <code class="highlighter-rouge">$\theta$</code> need to come from specific distributions (i.e. the exponential family), we also need to be able to differentiate through <code class="highlighter-rouge">$f_\phi$</code>. In the case where we have discrete latent variables, the gradient of <code class="highlighter-rouge">$f_\phi$</code> is zero almost everywhere in the parameter space.
+<h2 id="23-reinforce-for-non-reparameterizable-random-variables">2.3 REINFORCE for Non-Reparameterizable Random Variables</h2>
+<p>I am introducing REINFORCE under the scope of variational inference, however, this trick is most commonly seen in reinforcement learning (policy gradient). The concept of REINFORCE is quiet simple: <strong>re-write equation [2] to some form so we can obtain unbiased estimate via Monte-Carlo</strong>. Specifically, we want to message a gradient of expectation into expectation of some gradient. We begin by expanding the terms:
+<p><code class="highlighter-rouge">$$\nabla_{\phi}\text{ELBO}=\nabla_{\phi} \mathbb{E}_{q_{\phi}(\theta)}\left[f_{\phi}(\theta)\right]=\nabla_{\phi} \int d\theta q_{\phi}(\theta) f_{\phi}(\theta)$$</code>
+<p>applying chain rule:
+<p><code class="highlighter-rouge">$$\int d \theta\left[\left(\nabla_{\phi} q_{\phi}(\theta)\right) f_{\phi}(\theta)+q_{\phi}(\theta)\left(\nabla_{\phi} f_{\phi}(\theta)\right)\right]$$</code>
+<p>next, we use the log-derivative trick:
+<p><code class="highlighter-rouge">$$\nabla_{\phi} q_{\phi}(\theta)=q_{\phi}(\theta) \nabla_{\phi} \log q_{\phi}(\theta)$$</code>
+<p>to obtain
+<p><code class="highlighter-rouge">$$\nabla_{\phi}\text{ELBO}=\mathbb{E}_{q_{\phi}(\theta)}\left[\left(\nabla_{\phi} \log q_{\phi}(\theta)\right) f_{\phi}(\theta)+\nabla_{\phi} f_{\phi}(\theta)\right] \quad [3]$$</code>
+<p>Equation [3] is the REINFORCE equation. It is quiet disgusting looking and I do not have any intuition to what it represent (frankly, the ELBO objective took me a while to digest). But just by looking at it, we can now obtain unbiased estimates of our ELBO gradient! One way to package this result (for implementation) is by introducing a surrogate function:
+<p><code class="highlighter-rouge">$$\text { surrogate objective }= \log q_{\phi}(\theta) \overline{f_{\phi}(\theta)}+f_{\phi}(\theta)$$</code>
+<p>to be passed through the autograd, where <code class="highlighter-rouge">$\overline{f_{\phi}(\theta)}$</code> is held as a constant (detached during autograd). Equation [3] therefore becomes:
+<p><code class="highlighter-rouge">$$\nabla_{\phi} \mathrm{ELBO}=\mathbb{E}_{q_{\phi}(\theta)}\left[\nabla_{\phi}(\text { surrogate objective })\right] \quad [4]$$</code>
+<p>It would be good to finish the story here. Unfortunately, equation [4] suffers from <strong>high variance</strong> for a range of <code class="highlighter-rouge">$f(.)$</code>. So in although we can theoretically obtain unbiased estimates of the true gradient, in reality, noone is going to wait for 10,000 samples per backprop iteration. We therefore <strong>need ways to reduce the variance of our estimated ELBO gradient</strong>.
 </article>
 <aside class="related">
 <h2>Related posts</h2>
 <ul class="related-posts">
    <li>
     <a href="/posts/vi1">
-        <span>Variational Inference Part 1</span>
+        <span>Variational Inference Part 1: Intro and Mean-Field</span>
         <small>16/06</small>
     </a>
    <li>

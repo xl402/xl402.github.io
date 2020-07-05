@@ -6,12 +6,12 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 05 Jul 2020 17:56:48 +0100</pubDate>
-    <lastBuildDate>Sun, 05 Jul 2020 17:56:48 +0100</lastBuildDate>
+    <pubDate>Sun, 05 Jul 2020 20:54:51 +0100</pubDate>
+    <lastBuildDate>Sun, 05 Jul 2020 20:54:51 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
-        <title>Variational Inference Part 2</title>
+        <title>Variational Inference Part 2: Black-Box VI</title>
         <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including the &lt;em&gt;neural baseline&lt;/em&gt;).&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
@@ -28,7 +28,7 @@
 we discussed the implication of the ordering between &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$p$&lt;/code&gt; inside the brackets. In order to perform the optimisation, we showed that the objective function above is equivalent to &lt;strong&gt;maximising&lt;/strong&gt; the &lt;em&gt;evidence lower bound&lt;/em&gt;:&lt;/p&gt;
 
 &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$q^{*}=\operatorname{argmax}_{q \in Q}\text{ELBO} = \int_\theta q(\theta) \log p(\theta, X)d\theta - \int_\theta q(\theta)\log q(\theta)$$&lt;/code&gt;
-&lt;code class=&quot;highlighter-rouge&quot;&gt;$$ = \operatorname{argmax}_{q \in Q} \mathbb{E}_{\theta \sim q}[p(\theta, X)] + \mathcal{H}(q(\theta))$$&lt;/code&gt;&lt;/p&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;$$ = \operatorname{argmax}_{q \in Q} \mathbb{E}_{\theta \sim q}[p(\theta, X)] + \mathcal{H}(q(\theta))\quad [1]$$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;which intuitively speaking contains the maximum likelihood term &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta, X)$&lt;/code&gt; that prefers point estimation, and the entropy term &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{H}(q(\theta))$&lt;/code&gt; that prefers &lt;em&gt;diffusive&lt;/em&gt; estimation. Also note how this ELBO can be estimated easily with Monte-Carlo sampling. Since by construction, we know how to generate samples from &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta, X)$&lt;/code&gt;.&lt;/p&gt;
 
@@ -40,6 +40,68 @@ we discussed the implication of the ordering between &lt;code class=&quot;highli
 &lt;/ul&gt;
 
 &lt;p&gt;This post describes the more modern techniques used to do variational inference: the &lt;strong&gt;black-box&lt;/strong&gt; family. Specifically, we will look at the &lt;em&gt;reparameterisation trick&lt;/em&gt; and the famous &lt;em&gt;REINFORCE&lt;/em&gt; algorithm. We will also be discussing some variance reduction techniques such as the &lt;em&gt;baseline&lt;/em&gt; method. To make this post less dry, I will also be including some &lt;em&gt;Pyro&lt;/em&gt; (probabilistic programming language based on &lt;em&gt;PyTorch&lt;/em&gt;) just to demonstrate how easy black-box VI is.&lt;/p&gt;
+
+&lt;h1 id=&quot;2-theory-of-black-box-vi&quot;&gt;2. Theory of Black-Box VI&lt;/h1&gt;
+
+&lt;h2 id=&quot;21-why-is-elbo-backprop-hard&quot;&gt;2.1 Why Is ELBO Backprop Hard?&lt;/h2&gt;
+
+&lt;p&gt;One natural question to ask is - why can’t we just do backpropogation through this ELBO objective function? Let us first write down our ELBO (in a more workable format):&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\mathrm{ELBO} = \mathbb{E}_{q_{\phi}(\theta)}\left[\log p(x, \theta)-\log q_{\phi}(\theta)\right]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;This is not too much change from equation [1], we made it more explicit that our variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; is parameterised by &lt;code class=&quot;highlighter-rouge&quot;&gt;$\phi$&lt;/code&gt;. Form simplicity, let’s call variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; the &lt;strong&gt;guide&lt;/strong&gt; (this is commonly used in literature). The problem is that &lt;strong&gt;ELBO is an expectation&lt;/strong&gt;, so we need to be able to compute unbiased estimates of&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\theta, \phi} \mathrm{ELBO}=\nabla_{\theta, \phi} \mathbb{E}_{q_{\phi}(\theta)}\left[\log p(x, \theta)-\log q_{\phi}(\theta)\right]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Unfortunately, we &lt;strong&gt;can’t move the grad inside the expectation&lt;/strong&gt;, since our expectation is taken under our guide &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; that depends on &lt;code class=&quot;highlighter-rouge&quot;&gt;$\phi$&lt;/code&gt;. This problem can be framed in a more generic way, we can drop the distinction between &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\phi$&lt;/code&gt;, also let’s use &lt;code class=&quot;highlighter-rouge&quot;&gt;$f_\phi(\theta)$&lt;/code&gt; to denote any arbituary function within the bracket:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\phi} \mathbb{E}_{q_{\phi}(\theta)}\left[f_{\phi}(\theta)\right]  \quad [2]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Equation [2] describes the &lt;em&gt;gradient through an expectation&lt;/em&gt; and can be also found in the policy gradient algorithm in reinforcement learning. The remaining of the post aims to obtain &lt;strong&gt;unbiased estimates&lt;/strong&gt; of equation [2].&lt;/p&gt;
+
+&lt;h2 id=&quot;22-reparameterisation-trick&quot;&gt;2.2 Reparameterisation Trick&lt;/h2&gt;
+
+&lt;p&gt;The reparameterisation trick also known as path-wise gradients allow us to compute equation [2] by rewritting samples from the guide &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; in terms of a noise variable &lt;code class=&quot;highlighter-rouge&quot;&gt;$\epsilon$&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\mathbb{E}_{q_{\phi}(\theta)}\left[f_{\phi}(\theta)\right]=\mathbb{E}_{q(\epsilon)}\left[f_{\phi}\left(g_{\phi}(\epsilon)\right)\right]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;concretely, &lt;code class=&quot;highlighter-rouge&quot;&gt;$\epsilon \sim q(\epsilon)$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta = g_{\phi}(\epsilon)$&lt;/code&gt;. Crucially all the &lt;code class=&quot;highlighter-rouge&quot;&gt;$\phi$&lt;/code&gt; dependent terms have been moved inside of the expectation. This kind of reparameterisation can be done for many distributions (e.g. the normal distribution). An example of such reparameterisation can be highlighted by assuming that &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; is sampled from a Gaussian &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta \sim \mathcal{N}(\mu, \sigma)$&lt;/code&gt;. The function &lt;code class=&quot;highlighter-rouge&quot;&gt;$g_{\phi}(\varepsilon)$&lt;/code&gt; can then be expressed as&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$g_{\phi}(\varepsilon)=\mu_{\phi}+\varepsilon \sigma_{\phi}$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\epsilon \sim \mathcal{N}(0, 1)$&lt;/code&gt;. Assuming &lt;code class=&quot;highlighter-rouge&quot;&gt;$f(.)$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$g(.)$&lt;/code&gt; are sufficiently smooth, we can now get unbiased estimates of the gradient of interest by taking a Monte Carlo estimate of this expectation:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\phi} \mathbb{E}_{q(\epsilon)}\left[f_{\phi}\left(g_{\phi}(\epsilon)\right)\right]=\mathbb{E}_{q(\epsilon)}\left[\nabla_{\phi} f_{\phi}\left(g_{\phi}(\epsilon)\right)\right]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;In this case, not only do &lt;code class=&quot;highlighter-rouge&quot;&gt;$\theta$&lt;/code&gt; need to come from specific distributions (i.e. the exponential family), we also need to be able to differentiate through &lt;code class=&quot;highlighter-rouge&quot;&gt;$f_\phi$&lt;/code&gt;. In the case where we have discrete latent variables, the gradient of &lt;code class=&quot;highlighter-rouge&quot;&gt;$f_\phi$&lt;/code&gt; is zero almost everywhere in the parameter space.&lt;/p&gt;
+
+&lt;h2 id=&quot;23-reinforce-for-non-reparameterizable-random-variables&quot;&gt;2.3 REINFORCE for Non-Reparameterizable Random Variables&lt;/h2&gt;
+
+&lt;p&gt;I am introducing REINFORCE under the scope of variational inference, however, this trick is most commonly seen in reinforcement learning (policy gradient). The concept of REINFORCE is quiet simple: &lt;strong&gt;re-write equation [2] to some form so we can obtain unbiased estimate via Monte-Carlo&lt;/strong&gt;. Specifically, we want to message a gradient of expectation into expectation of some gradient. We begin by expanding the terms:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\phi}\text{ELBO}=\nabla_{\phi} \mathbb{E}_{q_{\phi}(\theta)}\left[f_{\phi}(\theta)\right]=\nabla_{\phi} \int d\theta q_{\phi}(\theta) f_{\phi}(\theta)$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;applying chain rule:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\int d \theta\left[\left(\nabla_{\phi} q_{\phi}(\theta)\right) f_{\phi}(\theta)+q_{\phi}(\theta)\left(\nabla_{\phi} f_{\phi}(\theta)\right)\right]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;next, we use the log-derivative trick:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\phi} q_{\phi}(\theta)=q_{\phi}(\theta) \nabla_{\phi} \log q_{\phi}(\theta)$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;to obtain&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\phi}\text{ELBO}=\mathbb{E}_{q_{\phi}(\theta)}\left[\left(\nabla_{\phi} \log q_{\phi}(\theta)\right) f_{\phi}(\theta)+\nabla_{\phi} f_{\phi}(\theta)\right] \quad [3]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Equation [3] is the REINFORCE equation. It is quiet disgusting looking and I do not have any intuition to what it represent (frankly, the ELBO objective took me a while to digest). But just by looking at it, we can now obtain unbiased estimates of our ELBO gradient! One way to package this result (for implementation) is by introducing a surrogate function:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\text { surrogate objective }= \log q_{\phi}(\theta) \overline{f_{\phi}(\theta)}+f_{\phi}(\theta)$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;to be passed through the autograd, where &lt;code class=&quot;highlighter-rouge&quot;&gt;$\overline{f_{\phi}(\theta)}$&lt;/code&gt; is held as a constant (detached during autograd). Equation [3] therefore becomes:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$\nabla_{\phi} \mathrm{ELBO}=\mathbb{E}_{q_{\phi}(\theta)}\left[\nabla_{\phi}(\text { surrogate objective })\right] \quad [4]$$&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;It would be good to finish the story here. Unfortunately, equation [4] suffers from &lt;strong&gt;high variance&lt;/strong&gt; for a range of &lt;code class=&quot;highlighter-rouge&quot;&gt;$f(.)$&lt;/code&gt;. So in although we can theoretically obtain unbiased estimates of the true gradient, in reality, noone is going to wait for 10,000 samples per backprop iteration. We therefore &lt;strong&gt;need ways to reduce the variance of our estimated ELBO gradient&lt;/strong&gt;.&lt;/p&gt;
 </description>
         <pubDate>Sun, 05 Jul 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/vi2</link>
@@ -219,7 +281,7 @@ The best way to understand the LSTM meta-learner is by first looking at the anim
       </item>
     
       <item>
-        <title>Variational Inference Part 1</title>
+        <title>Variational Inference Part 1: Intro and Mean-Field</title>
         <description>&lt;p class=&quot;lead&quot;&gt;(30 min) Part 1 of 2 series on variational inference. This part first introduces high-level concepts and the mean-field approximation. We then demonstrate the mean-field theory on a Bayesian Gaussian Mixture Model (Bayesian GMM).&lt;/p&gt;
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
