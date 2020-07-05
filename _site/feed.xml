@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 05 Jul 2020 17:53:10 +0100</pubDate>
-    <lastBuildDate>Sun, 05 Jul 2020 17:53:10 +0100</lastBuildDate>
+    <pubDate>Sun, 05 Jul 2020 17:56:48 +0100</pubDate>
+    <lastBuildDate>Sun, 05 Jul 2020 17:56:48 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -23,7 +23,7 @@
 
 &lt;p&gt;this integration over the parameter space is very very expensive.&lt;/p&gt;
 
-&lt;p&gt;We cook up a &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; that &lt;em&gt;approximates&lt;/em&gt; the posterior. The problem of finding the posterior distribution therefore becomes an &lt;strong&gt;optimisation problem&lt;/strong&gt;. Specifically, we wish to minimise:
+&lt;p&gt;To address this problem, we cook up a &lt;em&gt;variational distribution&lt;/em&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; that &lt;em&gt;approximates&lt;/em&gt; the posterior. The problem of finding the posterior distribution therefore becomes an &lt;strong&gt;optimisation problem&lt;/strong&gt;. Specifically, we wish to minimise:
 &lt;code class=&quot;highlighter-rouge&quot;&gt;$$\text{KL}(q(\theta) \| p(\theta \mid X))$$&lt;/code&gt;
 we discussed the implication of the ordering between &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$p$&lt;/code&gt; inside the brackets. In order to perform the optimisation, we showed that the objective function above is equivalent to &lt;strong&gt;maximising&lt;/strong&gt; the &lt;em&gt;evidence lower bound&lt;/em&gt;:&lt;/p&gt;
 
@@ -32,7 +32,7 @@ we discussed the implication of the ordering between &lt;code class=&quot;highli
 
 &lt;p&gt;which intuitively speaking contains the maximum likelihood term &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta, X)$&lt;/code&gt; that prefers point estimation, and the entropy term &lt;code class=&quot;highlighter-rouge&quot;&gt;$\mathcal{H}(q(\theta))$&lt;/code&gt; that prefers &lt;em&gt;diffusive&lt;/em&gt; estimation. Also note how this ELBO can be estimated easily with Monte-Carlo sampling. Since by construction, we know how to generate samples from &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta, X)$&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;We then introduced an &lt;strong&gt;analytical method&lt;/strong&gt; called &lt;em&gt;mean-field&lt;/em&gt; approximation, that falls under the framework of ELBO maximisation. One major problem with the &lt;em&gt;mean-field&lt;/em&gt; approach is that:&lt;/p&gt;
+&lt;p&gt;We then introduced an &lt;strong&gt;analytical method&lt;/strong&gt; called &lt;em&gt;mean-field&lt;/em&gt; approximation, that falls under the framework of ELBO maximisation. The major problems with the &lt;em&gt;mean-field&lt;/em&gt; approach are that:&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;It places heavy constraint on what our variational distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$q(\theta)$&lt;/code&gt; (it assumes it to be fully factorised)&lt;/li&gt;
@@ -224,7 +224,7 @@ The best way to understand the LSTM meta-learner is by first looking at the anim
 &lt;p&gt;&amp;lt;!–-break-–&amp;gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
-&lt;p&gt;Bayesian inference offers an attractive story with principled uncertainty estimation and the ability to combine expert knowledge into the model. For reasons that will hopefully become clear later, the challenge in Bayesian inference is to be able to provide both fast and scalable products during both development and serving. In this post, I will summarise what variational inference is trying to solve, it’s benefits and potential pitfalls. I will then introduce the mean-field method, and use it to solve a Bayesian Gaussian Mixture Model. In the second post, I will elaborate on black-box variational inference methods.&lt;/p&gt;
+&lt;p&gt;Bayesian inference offers an attractive story with principled uncertainty estimation and the ability to combine expert knowledge into the model. For reasons that will hopefully become clear later, the challenge in Bayesian inference is to be able to provide both fast and scalable products during both development and serving. In this post, I will summarise what variational inference is trying to solve, it’s benefits and potential pitfalls. I will then introduce the mean-field method, and use it to solve a Bayesian Gaussian Mixture Model. In the &lt;a href=&quot;http://tlublog.com/posts/vi2&quot;&gt;second post&lt;/a&gt;, I will elaborate on black-box variational inference methods.&lt;/p&gt;
 
 &lt;p&gt;VI is an advanced topic, so intermediate-level probability theory and ML knowledge are assumed. Knowledge of the &lt;a href=&quot;https://www.youtube.com/watch?v=ErfnhcEV1O8&quot;&gt;&lt;em&gt;Kullback–Leibler&lt;/em&gt;&lt;/a&gt; (KL) divergence is also expected. To better understand Bayesian GMM (which will be maths heavy), I would like to recommend my previous post on &lt;a href=&quot;https://xl402.github.io/posts/em&quot;&gt;Expectation Maximisation&lt;/a&gt; and &lt;a href=&quot;https://www.youtube.com/watch?v=REypj2sy_5U&amp;amp;t=329s&quot;&gt;this&lt;/a&gt; video for intuition. Let’s dive in!&lt;/p&gt;
 
