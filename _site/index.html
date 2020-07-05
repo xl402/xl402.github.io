@@ -72,6 +72,79 @@
 </header>
 <article class="blog">
 <style>
+  .vi2 {
+    margin-bottom: 2em;
+  }
+  .vi2::before {
+    background-image: url('https://filmot.com/myX95GO.jpg');
+    background-size: cover;
+    -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -2;
+  }
+  .vi2::after {
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: 0.8);
+    /*mix-blend-mode: darken;
+    mix-blend-mode: color-burn;
+    mix-blend-mode: hard-light;*/
+    mix-blend-mode: overlay;
+    z-index: -1;
+  }
+  .vi2-container,
+  .vi2-container::before,
+  .vi2-container::after {
+    height: 25rem;
+  }
+  .vi2-bleed-container,
+  .vi2-bleed-container::before,
+  .vi2-bleed-container::after {
+    height: 25rem;
+  }
+    @media (max-width: 48rem) {
+        .vi2-container,
+        .vi2-container::before,
+        .vi2-container::after{
+            height: 20rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+ <div class="
+    post-title-container
+        vi2 vi2-container hero-hov
+  ">
+   <div class="heading-container hero-heading hero-heading-blog">
+     <h1>
+          <a href="/posts/vi2" title="Variational Inference Part 2">Variational Inference Part 2</a>
+     </h1>
+     <div class="
+        post-meta
+      ">
+        <span>05/07/2020</span>
+        <span>
+              <a href="/tag/theory">#theory</a>
+              <a href="/tag/bayesian">#bayesian</a>
+        </span>
+     </div>
+   </div>
+ </div>
+     <p class="lead">(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including neural baseline).
+       <div class="readmore">
+          <a href="/posts/vi2" role="button">Read more</a>
+       <div>
+</article>
+ <hr>
+<article class="blog">
+<style>
   .few-shot {
     margin-bottom: 2em;
   }
@@ -92,7 +165,7 @@
     width: 100%;
     left: 0;
     top: 0;
-    background-color: 0.8);
+    background-color: rgba(255,100,0,0.8);
     /*mix-blend-mode: darken;
     mix-blend-mode: color-burn;
     mix-blend-mode: hard-light;*/
@@ -137,7 +210,7 @@
      </div>
    </div>
  </div>
-     <p class="lead">(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning and meta-learning ().
+     <p class="lead">(30 min) Literature review of popular methods in few-shot learning. With a focus on metric-learning and meta-learning.
        <div class="readmore">
           <a href="/posts/few-shot" role="button">Read more</a>
        <div>

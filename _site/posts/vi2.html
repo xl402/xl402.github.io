@@ -11,13 +11,17 @@
 <link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="msapplication-TileColor" content="#da532c">
 <meta name="theme-color" content="#ffffff">
-<title>Archive &#9642; Lu Blog</title>
-<!---->
+<title>Variational Inference Part 2 &#9642; Lu Blog</title>
+<!--
+<meta name="description" content="(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including neural baseline).
+">
+-->
 <meta name="description" content="© 2020. Powered by Jekyll & Dactl
 ">
-<link rel="canonical" href="http://localhost:4000/archive/">
+<meta name="keywords" content="theory, bayesian">
+<link rel="canonical" href="http://localhost:4000/posts/vi2">
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Archive" />
+<meta name="twitter:title" content="Variational Inference Part 2" />
 <meta name="twitter:description" content="© 2020. Powered by Jekyll & Dactl
 " />
 <meta name="twitter:image" content="http://localhost:4000" />
@@ -25,10 +29,10 @@
 <link rel="author" href="">
 <meta property="og:locale" content="">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Archive">
+<meta property="og:title" content="Variational Inference Part 2">
 <meta property="og:description" content="© 2020. Powered by Jekyll & Dactl
 ">
-<meta property="og:url" content="http://localhost:4000/archive/">
+<meta property="og:url" content="http://localhost:4000/posts/vi2">
 <meta property="og:site_name" content="Lu Blog">
 <link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
 <link rel="stylesheet" href="/assets/css/main.css">
@@ -70,44 +74,88 @@
      </ul>
    </div>
 </header>
-           <div class="page">
-<div class="page-title-container">
- <div class="heading-container">
-   <h1>Archive</h1>
-    <span></span>
+<article class="post">
+<style>
+  .vi2 {
+    margin-bottom: 2em;
+  }
+  .vi2::before {
+    background-image: url('https://filmot.com/myX95GO.jpg');
+    background-size: cover;
+    -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -2;
+  }
+  .vi2::after {
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: 0.8);
+    /*mix-blend-mode: darken;
+    mix-blend-mode: color-burn;
+    mix-blend-mode: hard-light;*/
+    mix-blend-mode: overlay;
+    z-index: -1;
+  }
+  .vi2-container,
+  .vi2-container::before,
+  .vi2-container::after {
+    height: 25rem;
+  }
+  .vi2-bleed-container,
+  .vi2-bleed-container::before,
+  .vi2-bleed-container::after {
+    height: 25rem;
+  }
+    @media (max-width: 48rem) {
+        .vi2-container,
+        .vi2-container::before,
+        .vi2-container::after{
+            height: 20rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+ <div class="post-title-container
+  vi2 vi2-bleed-container bleed-hero-container
+    ">
+    <!--Post hero image source-->
+   <div class="heading-container hero-heading hero-heading-post">
+     <h1>
+          Variational Inference Part 2
+     </h1>
+     <div class="post-meta">
+        <span>05/07/2020</span>
+        <span>
+              <a href="/tag/theory">#theory</a>
+              <a href="/tag/bayesian">#bayesian</a>
+        </span>
+     </div>
+   </div>
  </div>
-</div>
-  			<h1>
-    July 2020
-</h1>
-  			<ul class="related-posts">
-     <li>
-    <a href="/posts/vi2">
-        <span>Variational Inference Part 2</span>
-        <small>05/07</small>
-    </a>
-  			</ul>
-  			<h1>
-    June 2020
-</h1>
-  			<ul class="related-posts">
-     <li>
-    <a href="/posts/few-shot">
-        <span>Few-shot Learning</span>
-        <small>21/06</small>
-    </a>
-     <li>
+   <p class="lead">(30 min) Part 2 of 2 series on variational inference. This part dives into the more practical black-box variational inference. We discuss the REINFORCE algorithm and gradient variance reduction techniques (including neural baseline).
+<p>
+</article>
+<aside class="related">
+<h2>Related posts</h2>
+<ul class="related-posts">
+   <li>
     <a href="/posts/vi1">
         <span>Variational Inference Part 1</span>
         <small>16/06</small>
     </a>
-     <li>
+   <li>
     <a href="/posts/em">
         <span>Expectation Maximisation Deep Dive</span>
         <small>12/06</small>
     </a>
-  	</ul>
-</div>
+</aside>
            <footer>
     <span>© 2020. Powered by Jekyll & Dactl
 </span>
