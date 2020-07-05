@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 05 Jul 2020 17:52:30 +0100</pubDate>
-    <lastBuildDate>Sun, 05 Jul 2020 17:52:30 +0100</lastBuildDate>
+    <pubDate>Sun, 05 Jul 2020 17:53:10 +0100</pubDate>
+    <lastBuildDate>Sun, 05 Jul 2020 17:53:10 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -19,7 +19,7 @@
 
 &lt;p&gt;In &lt;a href=&quot;http://tlublog.com/posts/vi1&quot;&gt;part I&lt;/a&gt; of the series, we explored the origin of variational inference. As a quick recap, the posterior distribution &lt;code class=&quot;highlighter-rouge&quot;&gt;$p(\theta |X)$&lt;/code&gt; is intractable to compute, as we need to explicitly compute the evidence term:&lt;/p&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X)=\int_{\theta} p(X \mid \theta) p(\theta)$$&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$p(X)=\int_{\theta} p(X \mid \theta) p(\theta)d\theta$$&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;this integration over the parameter space is very very expensive.&lt;/p&gt;
 
