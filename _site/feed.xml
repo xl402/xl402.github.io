@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 08 Jul 2020 13:37:24 +0100</pubDate>
-    <lastBuildDate>Wed, 08 Jul 2020 13:37:24 +0100</lastBuildDate>
+    <pubDate>Wed, 08 Jul 2020 13:48:14 +0100</pubDate>
+    <lastBuildDate>Wed, 08 Jul 2020 13:48:14 +0100</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
     
       <item>
@@ -104,7 +104,7 @@ we discussed the implication of the ordering between &lt;code class=&quot;highli
 &lt;p&gt;It would be good to finish the story here. Unfortunately, equation [4] suffers from &lt;strong&gt;high variance&lt;/strong&gt; for a range of &lt;code class=&quot;highlighter-rouge&quot;&gt;$f(.)$&lt;/code&gt;. So in although we can theoretically obtain unbiased estimates of the true gradient, in reality, noone is going to wait for 10,000 samples per backprop iteration. We therefore &lt;strong&gt;need ways to reduce the variance of our estimated ELBO gradient&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;h1 id=&quot;3-practical-vi-with-pyro&quot;&gt;3. Practical VI with Pyro&lt;/h1&gt;
-&lt;p&gt;Let’s demonstrate how black-box VI actually works using Pyro. We can build a very dumb model that estimates whether a coin is biased based on the number of tosses. The good thing with this model is that - there exists a analytical solution. Unfortunately, this blog is not about Pyro, so the code won’t be explained in depth. However, the code is pretty much copy-pasted from the &lt;a href=&quot;https://pyro.ai/examples/svi_part_ii.html&quot;&gt;Pyro tutorial&lt;/a&gt; itself.&lt;/p&gt;
+&lt;p&gt;Let’s demonstrate how black-box VI actually works using Pyro. We can build a very dumb model that estimates whether a coin is biased based on the number of tosses. The good thing with this model is that - there exists a analytical solution. Unfortunately, this blog is not about Pyro, so the code won’t be explained in depth. However, the code is pretty much copy-pasted from the &lt;a href=&quot;https://pyro.ai/examples/svi_part_ii.html&quot;&gt;Pyro tutorial&lt;/a&gt; itself. And frankly Pyro is so high level, anyone who know some PyTorch/numpy can understand it.&lt;/p&gt;
 
 &lt;p&gt;Say we wish to find the posterior distribution of the parameter &lt;code class=&quot;highlighter-rouge&quot;&gt;$p$&lt;/code&gt;, which governs the probability that a coin toss yields a head:&lt;/p&gt;
 
@@ -155,11 +155,11 @@ we discussed the implication of the ordering between &lt;code class=&quot;highli
 
 &lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;$h$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$t$&lt;/code&gt; are the number of observed head and tails respectively.&lt;/p&gt;
 
-&lt;p&gt;For the purpose of demonstrating SVI, we specify a &lt;em&gt;variational posterior distribution&lt;/em&gt;, also called a guide in pyro $q$, where&lt;/p&gt;
+&lt;p&gt;For the purpose of demonstrating SVI, we specify a &lt;em&gt;variational posterior distribution&lt;/em&gt;, also called a guide in pyro &lt;code class=&quot;highlighter-rouge&quot;&gt;$q$&lt;/code&gt;, where&lt;/p&gt;
 
 &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;$$q\sim \text{Beta}(\alpha, \beta)$$&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;we need to ensure that $\alpha$ and $\beta$ are constrained to be positive&lt;/p&gt;
+&lt;p&gt;we need to ensure that &lt;code class=&quot;highlighter-rouge&quot;&gt;$\alpha$&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;$\beta$&lt;/code&gt; are constrained to be positive&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;guide&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;alpha_q&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pyro&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;param&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;alpha_q&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;15.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
@@ -199,8 +199,9 @@ we discussed the implication of the ordering between &lt;code class=&quot;highli
 
 &lt;p&gt;We get:&lt;/p&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Posterior alpha and beta values are 16.1 and 13.9 respectively&lt;/code&gt;
-&lt;code class=&quot;highlighter-rouge&quot;&gt;The fairness of the coin is 0.536 ± 0.090&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Posterior alpha and beta values are 16.1 and 13.9 respectively&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;The fairness of the coin is 0.536 ± 0.090&lt;/code&gt;&lt;/p&gt;
 
 &lt;p&gt;which is pretty much the same as our analytical result (16 and 14 for the posterior alpha, beta values).&lt;/p&gt;
 
@@ -272,6 +273,11 @@ which intuitively makes sense. However, there is no theorem that suggests this i
 
 &lt;span class=&quot;n&quot;&gt;optimizer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;optim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Adam&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;per_param_args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
+&lt;h1 id=&quot;5-conclusion&quot;&gt;5. Conclusion&lt;/h1&gt;
+
+&lt;p&gt;The main take-away from this post is that - ELBO gradient is not straight forward to obtain. In a lot of cases, we turn this gradient of expectation into an expectation of some gradient (the REINFORCE algorithm). This makes ELBO gradient &lt;em&gt;sampled/estimated&lt;/em&gt;, not &lt;em&gt;analytically obtained&lt;/em&gt;, if unfortunately suffers from from high variance. To combat this, we &lt;strong&gt;mark all conditional independence when we can&lt;/strong&gt;, and when that fails, we create a &lt;em&gt;baseline&lt;/em&gt; that somehow estimates values of the function at each update-step.&lt;/p&gt;
+
+&lt;p&gt;Pyro makes all the aforementioned stuff easy. The &lt;code class=&quot;highlighter-rouge&quot;&gt;SVI&lt;/code&gt; class implements ELBO gradient re-parameterisation when possible, and handles the REINFORCE algorithm automatically. Variational inference therefore is almost identical to normal gradient update.&lt;/p&gt;
 </description>
         <pubDate>Sun, 05 Jul 2020 00:00:00 +0100</pubDate>
         <link>http://localhost:4000/posts/vi2</link>
