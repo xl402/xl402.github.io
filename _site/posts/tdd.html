@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+       <meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+<link rel="manifest" href="/assets/icons/site.webmanifest">
+<link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+<title>Test Driven Development with Tensorflow &#9642; Lu Blog</title>
+<!--
+<meta name="description" content="(30 min) This post demonstrates how Test Driven Development (TDD) applies to
+developing Machine Learning frameworks such as Tensorflow
+">
+-->
+<meta name="description" content="© 2020. Powered by Jekyll & Dactl
+">
+<meta name="keywords" content="practical, coding">
+<link rel="canonical" href="http://localhost:4000/posts/tdd">
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Test Driven Development with Tensorflow" />
+<meta name="twitter:description" content="© 2020. Powered by Jekyll & Dactl
+" />
+<meta name="twitter:image" content="http://localhost:4000" />
+<meta name="author" content="">
+<link rel="author" href="">
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Test Driven Development with Tensorflow">
+<meta property="og:description" content="© 2020. Powered by Jekyll & Dactl
+">
+<meta property="og:url" content="http://localhost:4000/posts/tdd">
+<meta property="og:site_name" content="Lu Blog">
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source Serif Pro:400,400italic,700,700italic">
+<style>
+    html {
+      font-family: "Source Serif Pro", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    }
+</style>
+<link rel="stylesheet" href="/assets/css/bf.css">
+   <body>
+       <div class="wrapper" id="blep">
+          <header>
+   <div class="menu">
+     <div class="logo">
+        <a href="/">Lu Blog</a>
+        <object type="image/svg+xml" data="" class="logosvg">Your browser does not support svg images</object>
+     </div>
+       <ul>
+           <li><a href="/">home</a>
+           <li><a href="/about">about</a>
+           <li><a href="/archive">archive</a>
+       </ul>
+   </div>
+   <div class="social">
+     <ul>
+       <li>
+            <a href="https://www.linkedin.com/in/tomlu97" target="_blank" class="smaller">
+              <span class="icon-stackoverflow"></span>
+            </a>
+       <li>
+            <a href="https://github.com/xl402" target="_blank" class="smaller">
+              <span class="icon-github"></span>
+            </a>
+       <li>
+            <a href="#" onclick="switchTheme()" title="Switch theme?">
+              <span class="icon-invert_colors" id="theme-switcher"></span>
+            </a>
+     </ul>
+   </div>
+</header>
+<article class="post">
+<style>
+  .tdd {
+    margin-bottom: 2em;
+  }
+  .tdd::before {
+    background-image: url('https://filmot.com/ZLTJo4m.jpg');
+    background-size: cover;
+    -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -2;
+  }
+  .tdd::after {
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(255,100,0,0.8);
+    /*mix-blend-mode: darken;
+    mix-blend-mode: color-burn;
+    mix-blend-mode: hard-light;*/
+    mix-blend-mode: overlay;
+    z-index: -1;
+  }
+  .tdd-container,
+  .tdd-container::before,
+  .tdd-container::after {
+    height: 25rem;
+  }
+  .tdd-bleed-container,
+  .tdd-bleed-container::before,
+  .tdd-bleed-container::after {
+    height: 25rem;
+  }
+    @media (max-width: 48rem) {
+        .tdd-container,
+        .tdd-container::before,
+        .tdd-container::after{
+            height: 20rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+ <div class="post-title-container
+  tdd tdd-bleed-container bleed-hero-container
+    ">
+    <!--Post hero image source-->
+   <div class="heading-container hero-heading hero-heading-post">
+     <h1>
+          Test Driven Development with Tensorflow
+     </h1>
+     <div class="post-meta">
+        <span>22/10/2020</span>
+        <span>
+              <a href="/tag/practical">#practical</a>
+              <a href="/tag/coding">#coding</a>
+        </span>
+     </div>
+   </div>
+ </div>
+   <p class="lead">(30 min) This post demonstrates how <em>Test Driven Development (TDD)</em> applies to
+developing Machine Learning frameworks such as Tensorflow
+<p>
+<h1 id="1-introduction">1. Introduction</h1>
+<p>I came from a background of pure data science, where I frequently see
+colleagues or even tech leads writing codes that are not tested at all. Near
+the end of a product cycle, the ‘prototyped’ code/ tensorflow model are dumped
+to software engineers, where they are almost always re-written or accepted as
+black-box programs. Needless to say, the pain comes when the model is deployed,
+code/models naturally break and noone can even tell where things went wrong.
+Data science is becoming more and more of an integral part of the team, so
+developing bug-free, reproducible code should naturally be part of a data
+scientist’s job.
+<p><em>Test Driven Development</em> or TDD is a development technique where you must
+first write a test that <strong>fails</strong> before you write new functional code. It is a
+key part of agile software development process. There are ample tutorials
+online on how to do TDD, but I cannot find many resources on how to do TDD on
+machine learning frameworks such as Tensorflow. Personally, I think a lot of
+data scientists come from academia, where rapid prototyping is always prefered
+over code quality. This post therefore serves to demonstrate how model
+development process can actually be improved by using TDD as part of the
+workflow.
+</article>
+<aside class="related">
+<h2>Related posts</h2>
+<ul class="related-posts">
+</aside>
+           <footer>
+    <span>© 2020. Powered by Jekyll & Dactl
+</span>
+    <span>written by Tom Lu</span>
+</footer>
+       </div>
+<script type="text/javascript" src="/assets/js/theme.js"></script>
+<script type="text/javascript" src="/assets/js/barefoot.js"></script>
+<script src="//yihui.org/js/math-code.js"></script>
+<script async
+  src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+    

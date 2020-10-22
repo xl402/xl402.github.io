@@ -72,6 +72,80 @@
 </header>
 <article class="blog">
 <style>
+  .tdd {
+    margin-bottom: 2em;
+  }
+  .tdd::before {
+    background-image: url('https://filmot.com/ZLTJo4m.jpg');
+    background-size: cover;
+    -webkit-filter: grayscale(1) brightness(0.5) contrast(0.5);
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    z-index: -2;
+  }
+  .tdd::after {
+    content:'';
+    position:absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(255,100,0,0.8);
+    /*mix-blend-mode: darken;
+    mix-blend-mode: color-burn;
+    mix-blend-mode: hard-light;*/
+    mix-blend-mode: overlay;
+    z-index: -1;
+  }
+  .tdd-container,
+  .tdd-container::before,
+  .tdd-container::after {
+    height: 25rem;
+  }
+  .tdd-bleed-container,
+  .tdd-bleed-container::before,
+  .tdd-bleed-container::after {
+    height: 25rem;
+  }
+    @media (max-width: 48rem) {
+        .tdd-container,
+        .tdd-container::before,
+        .tdd-container::after{
+            height: 20rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+ <div class="
+    post-title-container
+        tdd tdd-container hero-hov
+  ">
+   <div class="heading-container hero-heading hero-heading-blog">
+     <h1>
+          <a href="/posts/tdd" title="Test Driven Development with Tensorflow">Test Driven Development with Tensorflow</a>
+     </h1>
+     <div class="
+        post-meta
+      ">
+        <span>22/10/2020</span>
+        <span>
+              <a href="/tag/practical">#practical</a>
+              <a href="/tag/coding">#coding</a>
+        </span>
+     </div>
+   </div>
+ </div>
+     <p class="lead">(30 min) This post demonstrates how <em>Test Driven Development (TDD)</em> applies to
+developing Machine Learning frameworks such as Tensorflow
+       <div class="readmore">
+          <a href="/posts/tdd" role="button">Read more</a>
+       <div>
+</article>
+ <hr>
+<article class="blog">
+<style>
   .vi2 {
     margin-bottom: 2em;
   }
@@ -92,7 +166,7 @@
     width: 100%;
     left: 0;
     top: 0;
-    background-color: 0.8);
+    background-color: rgba(255,100,0,0.8);
     /*mix-blend-mode: darken;
     mix-blend-mode: color-burn;
     mix-blend-mode: hard-light;*/

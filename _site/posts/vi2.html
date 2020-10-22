@@ -198,20 +198,20 @@ we discussed the implication of the ordering between <code class="highlighter-ro
 <figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">pyro</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.distributions.constraints</span> <span class="kn">as</span> <span class="nn">constraints</span>
+<span class="kn">import</span> <span class="nn">torch.distributions.constraints</span> <span class="k">as</span> <span class="n">constraints</span>
 <span class="kn">from</span> <span class="nn">pyro.optim</span> <span class="kn">import</span> <span class="n">Adam</span>
 <span class="kn">from</span> <span class="nn">pyro.infer</span> <span class="kn">import</span> <span class="n">SVI</span><span class="p">,</span> <span class="n">Trace_ELBO</span>
-<span class="kn">import</span> <span class="nn">pyro.distributions</span> <span class="kn">as</span> <span class="nn">dist</span>
+<span class="kn">import</span> <span class="nn">pyro.distributions</span> <span class="k">as</span> <span class="n">dist</span>
 
-<span class="n">N_STEPS</span> <span class="o">=</span> <span class="mi">5000</span> <span class="c"># number of gradient update</span>
-<span class="n">N_HEADS</span> <span class="o">=</span> <span class="mi">6</span> <span class="c"># observed number of heads</span>
-<span class="n">N_TAILS</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">N_STEPS</span> <span class="o">=</span> <span class="mi">5000</span> <span class="c1"># number of gradient update
+</span><span class="n">N_HEADS</span> <span class="o">=</span> <span class="mi">6</span> <span class="c1"># observed number of heads
+</span><span class="n">N_TAILS</span> <span class="o">=</span> <span class="mi">4</span>
 
-<span class="c"># clear param store</span>
-<span class="n">pyro</span><span class="o">.</span><span class="n">clear_param_store</span><span class="p">()</span>
+<span class="c1"># clear param store
+</span><span class="n">pyro</span><span class="o">.</span><span class="n">clear_param_store</span><span class="p">()</span>
 
-<span class="c"># create some data with some observed heads and some observed tails</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_HEADS</span><span class="o">+</span><span class="n">N_TAILS</span><span class="p">)</span>
+<span class="c1"># create some data with some observed heads and some observed tails
+</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N_HEADS</span><span class="o">+</span><span class="n">N_TAILS</span><span class="p">)</span>
 <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">N_HEADS</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N_HEADS</span><span class="p">)</span></code></pre></figure>
 <p>We then build this <strong>generative</strong> model describing how we may draw coin toss observations from the prior:
 <figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
@@ -221,8 +221,8 @@ we discussed the implication of the ordering between <code class="highlighter-ro
     <span class="n">f</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"latent_fairness"</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span><span class="n">alpha0</span><span class="p">,</span> <span class="n">beta0</span><span class="p">))</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pyro</span><span class="o">.</span><span class="n">plate</span><span class="p">(</span><span class="s">"data_loop"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
-        <span class="c"># observe datapoint i using the bernoulli likelihood</span>
-        <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"obs_{}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">dist</span><span class="o">.</span><span class="n">Bernoulli</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">obs</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></code></pre></figure>
+        <span class="c1"># observe datapoint i using the bernoulli likelihood
+</span>        <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"obs_{}"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">dist</span><span class="o">.</span><span class="n">Bernoulli</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">obs</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span></code></pre></figure>
 <p>with <em>latent_fairness</em> denoting <code class="highlighter-rouge">$p$</code>, the parameter whose distribution we are interested in estimating. Note we used <code class="highlighter-rouge">pyro.plate</code> to mark conditional independence in our observations, this is because <code class="highlighter-rouge">$x\in X$</code> are i.i.d observations. Not only is this step important for model scaling (many observations), but it also helps with ELBO gradient variance reduction (see section below).
 <p>The analytical posterior can be calculated:
 <p><code class="highlighter-rouge">$$P(p|X)\sim \text{Beta}(10+h, 10+t)$$</code>
@@ -235,32 +235,32 @@ we discussed the implication of the ordering between <code class="highlighter-ro
                          <span class="n">constraint</span><span class="o">=</span><span class="n">constraints</span><span class="o">.</span><span class="n">positive</span><span class="p">)</span>
     <span class="n">beta_q</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s">"beta_q"</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">15.0</span><span class="p">),</span>
                         <span class="n">constraint</span><span class="o">=</span><span class="n">constraints</span><span class="o">.</span><span class="n">positive</span><span class="p">)</span>
-    <span class="c"># sample latent_fairness from the distribution Beta(alpha_q, beta_q)</span>
-    <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"latent_fairness"</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span><span class="n">alpha_q</span><span class="p">,</span> <span class="n">beta_q</span><span class="p">))</span></code></pre></figure>
+    <span class="c1"># sample latent_fairness from the distribution Beta(alpha_q, beta_q)
+</span>    <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"latent_fairness"</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">Beta</span><span class="p">(</span><span class="n">alpha_q</span><span class="p">,</span> <span class="n">beta_q</span><span class="p">))</span></code></pre></figure>
 <p><strong>it is important that in the guide, parameters names match for those we want to approximate</strong> (in this case, the <em>latent_fairness</em>). Finally, we use Adam optimiser, specifying ELBO loss and just do inference!
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c"># setup the optimizer</span>
-<span class="n">adam_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">"lr"</span><span class="p">:</span> <span class="mf">0.00025</span><span class="p">,</span> <span class="s">"betas"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.90</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)}</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># setup the optimizer
+</span><span class="n">adam_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">"lr"</span><span class="p">:</span> <span class="mf">0.00025</span><span class="p">,</span> <span class="s">"betas"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.90</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)}</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">adam_params</span><span class="p">)</span>
 
-<span class="c"># setup the inference algorithm</span>
-<span class="n">svi</span> <span class="o">=</span> <span class="n">SVI</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">guide</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">Trace_ELBO</span><span class="p">())</span>
+<span class="c1"># setup the inference algorithm
+</span><span class="n">svi</span> <span class="o">=</span> <span class="n">SVI</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">guide</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">Trace_ELBO</span><span class="p">())</span>
 <span class="n">losses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N_STEPS</span><span class="p">)</span>
 
-<span class="c"># do gradient steps</span>
-<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_STEPS</span><span class="p">)):</span>
+<span class="c1"># do gradient steps
+</span><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_STEPS</span><span class="p">)):</span>
     <span class="n">losses</span><span class="p">[</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">svi</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code></pre></figure>
 <p>That’s it! To evaluate model correctness:
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c"># grab the learned variational parameters</span>
-<span class="n">alpha_q</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s">"alpha_q"</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="c1"># grab the learned variational parameters
+</span><span class="n">alpha_q</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s">"alpha_q"</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 <span class="n">beta_q</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s">"beta_q"</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
 <span class="n">inferred_mean</span> <span class="o">=</span> <span class="n">alpha_q</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha_q</span> <span class="o">+</span> <span class="n">beta_q</span><span class="p">)</span>
 <span class="n">factor</span> <span class="o">=</span> <span class="n">beta_q</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha_q</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">alpha_q</span> <span class="o">+</span> <span class="n">beta_q</span><span class="p">))</span>
 <span class="n">inferred_std</span> <span class="o">=</span> <span class="n">inferred_mean</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">"Posterior alpha and beta values are {:.1f} and {:.1f} respectively</span><span class="se">\n</span><span class="s">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">alpha_q</span><span class="p">,</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"Posterior alpha and beta values are {:.1f} and {:.1f} respectively</span><span class="se">\n</span><span class="s">"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">alpha_q</span><span class="p">,</span>
                                                                                     <span class="n">beta_q</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">"The fairness of the coin is {:.3f} ± {:.3f}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">inferred_mean</span><span class="p">,</span> <span class="n">inferred_std</span><span class="p">))</span></code></pre></figure>
+<span class="k">print</span><span class="p">(</span><span class="s">"The fairness of the coin is {:.3f} ± {:.3f}"</span><span class="o">.</span><span class="nb">format</span><span class="p">(</span><span class="n">inferred_mean</span><span class="p">,</span> <span class="n">inferred_std</span><span class="p">))</span></code></pre></figure>
 <p>We get:
 <p><code class="highlighter-rouge">Posterior alpha and beta values are 16.1 and 13.9 respectively</code>
 <p><code class="highlighter-rouge">The fairness of the coin is 0.536 ± 0.090</code>
@@ -287,8 +287,8 @@ we discussed the implication of the ordering between <code class="highlighter-ro
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim_input</span><span class="p">,</span> <span class="n">dim_hidden</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim_hidden</span><span class="p">,</span><span class="n">dim_hidden</span><span class="p">)</span>
-        <span class="c"># add more layers/activations</span>
-
+        <span class="c1"># add more layers/activations
+</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">out</span></code></pre></figure>
@@ -297,8 +297,8 @@ we discussed the implication of the ordering between <code class="highlighter-ro
 
 <span class="k">def</span> <span class="nf">guide</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="n">pyro</span><span class="o">.</span><span class="n">module</span><span class="p">(</span><span class="s">"my_baseline"</span><span class="p">,</span> <span class="n">baseline_module</span><span class="p">)</span>
-    <span class="c"># ... other computations ...</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"z"</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">My_Dist</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+    <span class="c1"># ... other computations ...
+</span>    <span class="n">z</span> <span class="o">=</span> <span class="n">pyro</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="s">"z"</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">My_Dist</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
                     <span class="n">infer</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">baseline</span><span class="o">=</span><span class="p">{</span><span class="s">'nn_baseline'</span><span class="p">:</span> <span class="n">baseline_module</span><span class="p">,</span>
                                          <span class="s">'nn_baseline_input'</span><span class="p">:</span> <span class="n">x</span><span class="p">}))</span></code></pre></figure>
 <p>Under the hood Pyro constructs a loss of the form:
