@@ -22,7 +22,7 @@ published: true
 
 ## I am Tom,
 
-A Data Scientist at !@£$%, utilizing Machine Learning to forecast alternative financial markets. In 2020, I graduated with an MEng from the University of Cambridge, specializing in Information Engineering and Computational Neuroscience.
+A Data Scientist at [SeamlessML](http://www.seamlessml.com), utilizing Machine Learning to forecast alternative financial markets. In 2020, I graduated with an MEng from the University of Cambridge, specializing in Information Engineering and Computational Neuroscience.
 
 My interests involve developing principled Bayesian models. Specifically, models that are well-calibrated and ‘know what they don’t know’, and models which are able to inherently deal with missing features and scarce/unlabelled data. I am also keen on investigating how model performance can be boosted to state-of-the-art using innovative feature-engineering and ensembling methods.
 
