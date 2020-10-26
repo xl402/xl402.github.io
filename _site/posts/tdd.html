@@ -144,12 +144,13 @@ developing Machine Learning frameworks such as Tensorflow
 developing Machine Learning frameworks such as Tensorflow
 <p>
 <h1 id="1-introduction">1. Introduction</h1>
-<p>I came from a data science background, where I frequently see
+<p>During my past ML research internship I frequently see
 colleagues or even tech leads writing codes that are not tested at all. Near
-the end of a product cycle, the ‘prototyped’ code/ tensorflow model are dumped
+the end of a product cycle, the ‘prototyped’ code/ tensorflow models are dumped
 to software engineers, where they are almost always re-written or accepted as
 black-box programs. Needless to say, the pain comes when the model is deployed,
-code/models naturally break and noone can even tell where things went wrong.
+code/models naturally break and you typically add another week of toil on
+debugging who has messed up.
 Data science is becoming more and more of an integral part of the team, so
 developing bug-free, reproducible code should naturally be part of a data
 scientist’s job.
@@ -162,6 +163,109 @@ data scientists come from academia, where rapid prototyping is always prefered
 over code quality. This post therefore serves to demonstrate how model
 development process can actually be improved by using TDD as part of the
 workflow.
+<h1 id="2-rapid-introduction-of-conventional-tdd-steps">2. Rapid Introduction of Conventional TDD Steps</h1>
+<p>There is actually a whole book on TDD written by <a href="https://www.oreilly.com/library/view/test-driven-development/0321146530/">Kent Beck</a>. Here I reproduce his summmary on the TDD workflow:
+<ol>
+ <li>Quickly add a test before writing you actual code
+ <li>Run all tests and see how it fails, make sure it fails at where you expect
+it to fail
+ <li>Make a little change that makes the test passes <strong>without worrying about
+  code quality</strong>
+ <li>Make sure tests pass then <strong>refactor your code</strong>
+ <li>Repeat from step 1
+</ol>
+<p>There are several nice properties of the TDD process: obviously, you no longer need to
+worry about catching up on writing unit tests. Secondly, you can actually worry
+less when you write actual code, as the tests are their to help you debug.
+Thirdly, you can refactor your code without worrying about breaking anything.
+Lastly and perhaps most crucially, you become faster at coding because <strong>you
+know exactly what you need to code</strong> because of the ‘contract’ specified by
+your tests.
+<p>When applying the TDD workflow to ML Research, it is worth noting that by no
+means should prototypes be tested, i.e. one should be free to open a ipython
+console/ Jupyter notebook and experiment with ideas. But the moment when a
+prototype goes near production code, the TDD framework should be applied.
+<h2 id="3-tdd-by-example-scaled-dot-product-attention">3. TDD By Example: Scaled Dot Product Attention</h2>
+<p>Let’s say you have decided to write your own scaled dot product attention layer
+in tensorflow. The equation to be implemented is:
+<code class="highlighter-rouge">$$\text{attention}(Q, K, V) = \sigma\left(\dfrac{QK^T}{\sqrt{\text{dim}(K)}}\right)V$$</code>
+<p>Where <code class="highlighter-rouge">$Q, K, V$</code> refer to the queries, keys and values matrices respectively.
+<p>Before we even think about implementing the line above, we create a test script
+called <code class="highlighter-rouge">test_attention.py</code>. First, we imagine that a script was already written
+for us by importing it (the test will obviously fail):
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">attention</span> <span class="k">as</span> <span class="n">attn</span></code></pre></figure>
+<p>Now we run pytest and observe that dreaded import error. We move onto step 3 -
+<em>make a little change that makes the test passes</em> by creating the script
+<code class="highlighter-rouge">attention.py</code> under <code class="highlighter-rouge">models</code> directory, and adding appropriate paths to
+PYTHONPATH.
+<p>Now we run the test, everything passes (there is no test so….) and we move
+onto the next task: How do we test for this attention layer? Sure, we can do
+some hand done complicated maths with some random <code class="highlighter-rouge">$Q, K, V$</code>. Or, we can begin
+by testing a very simple case: <strong>when query is fully aligned with one of the keys, and is orthogonal to the rest</strong>.
+Then the output should obviously be the value assigned to the key!
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">test_scaled_dot_product_attention_without_masked_input</span><span class="p">():</span>
+    <span class="n">queries</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">5.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]])</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">attn</span><span class="o">.</span><span class="n">scaled_dot_product_attention</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">]])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">expected</span><span class="p">)</span></code></pre></figure>
+<p>In the test above, our query is aligned with the second key, whose assiciated
+values is <code class="highlighter-rouge">$[2, 6]^T$</code> which is the expected output. Now we run the test and
+realise that we dont even have the function <code class="highlighter-rouge">scaled_dot_product_attention</code> in
+our script! We then add the following to <code class="highlighter-rouge">attention.py</code>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="k">def</span> <span class="nf">scaled_dot_product_attention</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+    <span class="k">pass</span></code></pre></figure>
+<p>Test fails: now at the right location, our model output is <code class="highlighter-rouge">None</code>. Now we
+actually implement the equation:
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="k">def</span> <span class="nf">scaled_dot_product_attention</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+    <span class="n">product</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">transpose_b</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keys_dim</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">scaled_product</span> <span class="o">=</span> <span class="n">product</span> <span class="o">/</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">keys_dim</span><span class="p">)</span>
+    <span class="n">attention_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scaled_product</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">attention</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attention_weights</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">attention</span></code></pre></figure>
+<p>The test passes! What about masked inputs? Attention layers are typically designed to ignore nan
+inputs. Again, we start by writing a test:
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">test_scaled_dot_product_attention_with_masked_input</span><span class="p">():</span>
+    <span class="n">queries</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">3.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">5.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">],</span> <span class="p">[</span><span class="mf">10000.</span><span class="p">,</span> <span class="mf">10000.</span><span class="p">]])</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">attn</span><span class="o">.</span><span class="n">scaled_dot_product_attention</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">]])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">expected</span><span class="p">)</span></code></pre></figure>
+<p>So we masked our last key, which happens to also perfectly align with our
+query. But we want to make sure that its values are not picked up by the
+output. Now we simply re-run the test and see test fails since we are giving
+one extra argument (<code class="highlighter-rouge">mask</code>) to the model. We then add:
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">scaled_dot_product_attention</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+   <span class="o">...</span></code></pre></figure>
+<p>Again, test fails as expected, our existing implementation (which doesn’t do
+anything with the mask) has managed to pick up the extreme values <code class="highlighter-rouge">$[1000, 1000]^T$</code>. Finally we correct our script:
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">scaled_dot_product_attention</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+    <span class="n">product</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">transpose_b</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">keys_dim</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">keys</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">scaled_product</span> <span class="o">=</span> <span class="n">product</span> <span class="o">/</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">keys_dim</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">scaled_product</span> <span class="o">+=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="o">-</span><span class="mf">1e9</span><span class="p">)</span>
+
+    <span class="n">attention_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scaled_product</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">attention</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attention_weights</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">attention</span></code></pre></figure>
+<p>Vola, all tests pass and now we can refactor our code if needed.
+<h2 id="4-advanced-testing-custom-gradient">4. Advanced Testing: Custom Gradient</h2>
 </article>
 <aside class="related">
 <h2>Related posts</h2>
